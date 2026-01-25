@@ -1,0 +1,12 @@
+/home/kang/Documents/projects/github/rust-ai/memory-gate-rs/target/debug/deps/thiserror-73c5cb1498dff862.d: /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /home/kang/Documents/projects/github/rust-ai/memory-gate-rs/target/debug/build/thiserror-f120952bacb12ece/out/private.rs
+
+/home/kang/Documents/projects/github/rust-ai/memory-gate-rs/target/debug/deps/libthiserror-73c5cb1498dff862.rmeta: /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /home/kang/Documents/projects/github/rust-ai/memory-gate-rs/target/debug/build/thiserror-f120952bacb12ece/out/private.rs
+
+/home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs:
+/home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs:
+/home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs:
+/home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs:
+/home/kang/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs:
+/home/kang/Documents/projects/github/rust-ai/memory-gate-rs/target/debug/build/thiserror-f120952bacb12ece/out/private.rs:
+
+# env-dep:OUT_DIR=/home/kang/Documents/projects/github/rust-ai/memory-gate-rs/target/debug/build/thiserror-f120952bacb12ece/out

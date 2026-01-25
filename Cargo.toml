@@ -1,0 +1,75 @@
+[package]
+name = "memory-gate-rs"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Tyler Zervas <tz-dev@vectorweight.com>"]
+license = "MIT"
+description = "Dynamic Memory Learning Layer for AI agents - persistent knowledge accumulation with vector retrieval and automatic consolidation"
+repository = "https://github.com/tzervas/memory-gate-rs"
+homepage = "https://github.com/tzervas/memory-gate-rs"
+documentation = "https://docs.rs/memory-gate-rs"
+keywords = ["ai", "memory", "agents", "vector-search", "learning"]
+categories = ["science", "asynchronous", "data-structures"]
+readme = "README.md"
+
+[features]
+default = ["in-memory"]
+in-memory = []
+qdrant = ["dep:qdrant-client", "dep:fastembed"]
+sqlite-vec = ["dep:rusqlite", "dep:fastembed"]
+metrics = ["dep:metrics", "dep:metrics-exporter-prometheus"]
+full = ["qdrant", "sqlite-vec", "metrics"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full", "sync", "time"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Cryptographic hashing
+sha2 = "0.10"
+
+# Error handling
+thiserror = "2"
+
+# Logging/tracing
+tracing = "0.1"
+
+# Optional: Metrics
+metrics = { version = "0.24", optional = true }
+metrics-exporter-prometheus = { version = "0.16", optional = true }
+
+# Optional: Vector storage backends
+qdrant-client = { version = "1", optional = true }
+rusqlite = { version = "0.32", features = ["bundled"], optional = true }
+
+# Optional: Embedding generation
+fastembed = { version = "4", optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "storage_benchmarks"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
