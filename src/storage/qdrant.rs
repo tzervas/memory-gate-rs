@@ -56,13 +56,13 @@ const DEFAULT_EMBEDDING_DIM: usize = 384;
 /// Qdrant-backed knowledge store with vector similarity search.
 ///
 /// This store uses Qdrant for efficient vector similarity search on learning
-/// contexts. It generates embeddings using FastEmbed and stores them alongside
+/// contexts. It generates embeddings using `FastEmbed` and stores them alongside
 /// the context metadata.
 ///
 /// # Features
 ///
 /// - High-performance vector similarity search
-/// - Automatic embedding generation via FastEmbed
+/// - Automatic embedding generation via `FastEmbed`
 /// - Domain-based filtering
 /// - Automatic collection creation with optimal settings
 /// - Payload storage for full context retrieval
@@ -282,7 +282,7 @@ impl QdrantStore {
 
         let importance = payload
             .get("importance")
-            .and_then(|v| v.as_f64())
+            .and_then(serde_json::Value::as_f64)
             .ok_or_else(|| StorageError::backend("Missing importance in payload"))?
             as f32;
 
@@ -459,8 +459,7 @@ impl KnowledgeStore<LearningContext> for QdrantStore {
 
         Ok(info
             .result
-            .map(|r| r.points_count.unwrap_or(0) as usize)
-            .unwrap_or(0))
+            .map_or(0, |r| r.points_count.unwrap_or(0) as usize))
     }
 
     async fn clear(&self) -> Result<()> {
@@ -482,12 +481,12 @@ impl VectorStore<LearningContext> for QdrantStore {
     }
 }
 
-/// Convert a Qdrant Value to a serde_json Value.
+/// Convert a Qdrant Value to a `serde_json` Value.
 fn qdrant_value_to_json(value: qdrant_client::qdrant::Value) -> Value {
     use qdrant_client::qdrant::value::Kind;
 
     match value.kind {
-        Some(Kind::NullValue(_)) => Value::Null,
+        Some(Kind::NullValue(_)) | None => Value::Null,
         Some(Kind::BoolValue(b)) => Value::Bool(b),
         Some(Kind::IntegerValue(i)) => Value::Number(i.into()),
         Some(Kind::DoubleValue(d)) => {
@@ -503,7 +502,6 @@ fn qdrant_value_to_json(value: qdrant_client::qdrant::Value) -> Value {
                 .map(|(k, v)| (k, qdrant_value_to_json(v)))
                 .collect(),
         ),
-        None => Value::Null,
     }
 }
 

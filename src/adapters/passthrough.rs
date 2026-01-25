@@ -50,7 +50,7 @@ impl MemoryAdapter<LearningContext> for PassthroughAdapter {
             // Validate feedback is in range
             let f = f.clamp(0.0, 1.0);
             // Blend current importance with feedback
-            context.importance = (context.importance + f) / 2.0;
+            context.importance = f32::midpoint(context.importance, f);
         }
         Ok(context)
     }

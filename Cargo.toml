@@ -1,8 +1,8 @@
 [package]
 name = "memory-gate-rs"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.92"
 authors = ["Tyler Zervas <tz-dev@vectorweight.com>"]
 license = "MIT"
 description = "Dynamic Memory Learning Layer for AI agents - persistent knowledge accumulation with vector retrieval and automatic consolidation"
@@ -19,7 +19,9 @@ in-memory = []
 qdrant = ["dep:qdrant-client", "dep:fastembed"]
 sqlite-vec = ["dep:rusqlite", "dep:fastembed"]
 metrics = ["dep:metrics", "dep:metrics-exporter-prometheus"]
-full = ["qdrant", "sqlite-vec", "metrics"]
+vsa-native = []  # Pure Rust VSA implementation (no external deps)
+vsa-accel = ["dep:trit-vsa"]  # EXPERIMENTAL: Accelerated VSA via rust-ai ecosystem (awaiting stable releases)
+full = ["qdrant", "sqlite-vec", "metrics", "vsa-native"]
 
 [dependencies]
 # Async runtime
@@ -42,6 +44,9 @@ thiserror = "2"
 # Logging/tracing
 tracing = "0.1"
 
+# Random number generation for VSA
+rand = "0.8"
+
 # Optional: Metrics
 metrics = { version = "0.24", optional = true }
 metrics-exporter-prometheus = { version = "0.16", optional = true }
@@ -53,6 +58,9 @@ rusqlite = { version = "0.32", features = ["bundled"], optional = true }
 # Optional: Embedding generation
 fastembed = { version = "5", optional = true }
 
+# Optional: rust-ai ecosystem VSA acceleration (EXPERIMENTAL - awaiting stable releases)
+trit-vsa = { version = "0.1.1", optional = true }
+
 [dev-dependencies]
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
@@ -60,6 +68,10 @@ criterion = { version = "0.5", features = ["async_tokio"] }
 
 [[bench]]
 name = "storage_benchmarks"
+harness = false
+
+[[bench]]
+name = "vsa_benchmarks"
 harness = false
 
 [package.metadata.docs.rs]

@@ -1,4 +1,8 @@
 //! Core types for memory-gate-rs.
+//!
+//! This module contains the fundamental data structures that represent memories,
+//! domain categorizations, and configuration. These types are designed to be
+//! serializable for persistence and transport across different storage backends.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -6,11 +10,23 @@ use std::collections::HashMap;
 use std::fmt;
 use std::time::Duration;
 
-/// Atomic unit of memory - contains learned content.
+/// Atomic unit of memory — contains learned content with contextual metadata.
 ///
 /// A `LearningContext` represents a single piece of knowledge that an agent
-/// has learned from an interaction. It includes the content itself, domain
-/// categorization, timestamp, importance score, and optional metadata.
+/// has learned from an interaction. The design captures not just *what* was
+/// learned, but *when*, *how important* it is, and *what domain* it belongs to.
+///
+/// # Why This Structure?
+///
+/// - **Content**: The actual knowledge — kept as free-form text to support any
+///   type of learning without rigid schemas.
+/// - **Domain**: Categorical filtering prevents cross-contamination in multi-agent
+///   or multi-purpose deployments.
+/// - **Timestamp**: Enables recency-based retrieval and time-based consolidation.
+/// - **Importance**: Allows prioritizing high-value memories during retrieval and
+///   protecting them during consolidation cleanup.
+/// - **Metadata**: Extensible key-value storage for domain-specific attributes
+///   without schema changes.
 ///
 /// # Example
 ///
@@ -72,7 +88,7 @@ impl LearningContext {
 
     /// Create a new learning context with custom importance.
     #[must_use]
-    pub fn with_importance(mut self, importance: f32) -> Self {
+    pub const fn with_importance(mut self, importance: f32) -> Self {
         self.importance = importance.clamp(0.0, 1.0);
         self
     }
@@ -95,7 +111,7 @@ impl LearningContext {
 
     /// Set a custom timestamp.
     #[must_use]
-    pub fn with_timestamp(mut self, timestamp: DateTime<Utc>) -> Self {
+    pub const fn with_timestamp(mut self, timestamp: DateTime<Utc>) -> Self {
         self.timestamp = timestamp;
         self
     }
@@ -263,7 +279,7 @@ impl GatewayConfig {
 
     /// Set the low importance threshold for consolidation.
     #[must_use]
-    pub fn with_low_importance_threshold(mut self, threshold: f32) -> Self {
+    pub const fn with_low_importance_threshold(mut self, threshold: f32) -> Self {
         self.low_importance_threshold = threshold.clamp(0.0, 1.0);
         self
     }

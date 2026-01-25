@@ -59,7 +59,7 @@ pub trait MemoryAdapter<T>: Send + Sync {
 ///
 /// - [`InMemoryStore`](crate::storage::InMemoryStore) - HashMap-based storage for testing
 /// - [`QdrantStore`](crate::storage::QdrantStore) - Qdrant vector database (feature: `qdrant`)
-/// - [`SqliteVecStore`](crate::storage::SqliteVecStore) - SQLite with vectors (feature: `sqlite-vec`)
+/// - [`SqliteVecStore`](crate::storage::SqliteVecStore) - `SQLite` with vectors (feature: `sqlite-vec`)
 #[async_trait]
 pub trait KnowledgeStore<T>: Send + Sync {
     /// Store an experience with the given key.

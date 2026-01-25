@@ -179,6 +179,6 @@ pub mod store_types {
     pub const IN_MEMORY: &str = "in_memory";
     /// Qdrant store.
     pub const QDRANT: &str = "qdrant";
-    /// SQLite vector store.
+    /// `SQLite` vector store.
     pub const SQLITE_VEC: &str = "sqlite_vec";
 }

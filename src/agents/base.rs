@@ -205,8 +205,7 @@ where
         // Optionally store the interaction
         let stored_key = if store_memory {
             let learning_content = format!(
-                "Task: {}\nResult: {}\nConfidence: {:.2}",
-                task_input, result, confidence
+                "Task: {task_input}\nResult: {result}\nConfidence: {confidence:.2}"
             );
             Some(self.store_learning(&learning_content, Some(confidence)).await?)
         } else {
@@ -245,26 +244,29 @@ impl EnhancedContext {
     /// Format memories as a context string for prompting.
     #[must_use]
     pub fn format_memories(&self) -> String {
+        use std::fmt::Write;
+        
         if self.retrieved_memories.is_empty() {
             return String::from("No relevant memories found.");
         }
 
         let mut output = String::from("Relevant memories:\n");
         for (i, mem) in self.retrieved_memories.iter().enumerate() {
-            output.push_str(&format!(
-                "{}. [{}] (importance: {:.2}) {}\n",
+            let _ = writeln!(
+                output,
+                "{}. [{}] (importance: {:.2}) {}",
                 i + 1,
                 mem.domain,
                 mem.importance,
                 mem.content
-            ));
+            );
         }
         output
     }
 
     /// Check if any memories were retrieved.
     #[must_use]
-    pub fn has_memories(&self) -> bool {
+    pub const fn has_memories(&self) -> bool {
         !self.retrieved_memories.is_empty()
     }
 }

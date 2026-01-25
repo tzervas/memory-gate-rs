@@ -1,6 +1,6 @@
-//! SQLite with sqlite-vec extension for vector similarity search.
+//! `SQLite` with sqlite-vec extension for vector similarity search.
 //!
-//! This module provides a [`SqliteVecStore`] implementation that uses SQLite
+//! This module provides a [`SqliteVecStore`] implementation that uses `SQLite`
 //! with the sqlite-vec extension for local vector similarity search on learning contexts.
 //!
 //! # Feature Flag
@@ -52,14 +52,14 @@ const DEFAULT_EMBEDDING_DIM: usize = 384;
 
 /// SQLite-based knowledge store with vector similarity search via sqlite-vec.
 ///
-/// This store uses SQLite with the sqlite-vec extension for efficient local
+/// This store uses `SQLite` with the sqlite-vec extension for efficient local
 /// vector similarity search on learning contexts. It generates embeddings
-/// using FastEmbed and stores them alongside the context data.
+/// using `FastEmbed` and stores them alongside the context data.
 ///
 /// # Features
 ///
 /// - Local vector similarity search (no external server required)
-/// - Automatic embedding generation via FastEmbed
+/// - Automatic embedding generation via `FastEmbed`
 /// - Domain-based filtering
 /// - File-based or in-memory database options
 /// - Automatic schema creation
@@ -71,7 +71,7 @@ const DEFAULT_EMBEDDING_DIM: usize = 384;
 /// - `learning_contexts`: Stores the key, JSON-serialized context, and domain
 /// - `vec_learning_contexts`: Virtual table for vector similarity search
 pub struct SqliteVecStore {
-    /// SQLite connection wrapped for async access.
+    /// `SQLite` connection wrapped for async access.
     conn: Arc<Mutex<Connection>>,
     /// Text embedding model.
     embedder: Arc<Mutex<TextEmbedding>>,
@@ -88,7 +88,7 @@ impl std::fmt::Debug for SqliteVecStore {
 }
 
 impl SqliteVecStore {
-    /// Open an in-memory SQLite database with vector support.
+    /// Open an in-memory `SQLite` database with vector support.
     ///
     /// This is useful for testing or temporary storage that doesn't need
     /// to persist across restarts.
@@ -110,14 +110,14 @@ impl SqliteVecStore {
         .await
     }
 
-    /// Open a file-based SQLite database with vector support.
+    /// Open a file-based `SQLite` database with vector support.
     ///
     /// Creates the database file if it doesn't exist. The schema will be
     /// automatically created on first open.
     ///
     /// # Arguments
     ///
-    /// * `path` - Path to the SQLite database file
+    /// * `path` - Path to the `SQLite` database file
     ///
     /// # Errors
     ///
@@ -195,13 +195,11 @@ impl SqliteVecStore {
 
         // Create embeddings table for storing vectors
         conn.execute(
-            &format!(
-                "CREATE TABLE IF NOT EXISTS context_embeddings (
+            "CREATE TABLE IF NOT EXISTS context_embeddings (
                     key TEXT PRIMARY KEY,
                     embedding BLOB NOT NULL,
                     FOREIGN KEY (key) REFERENCES learning_contexts(key) ON DELETE CASCADE
-                )"
-            ),
+                )",
             [],
         )
         .map_err(|e| StorageError::backend(format!("Failed to create embeddings table: {e}")))?;
@@ -451,48 +449,45 @@ impl SqliteVecStore {
         let conn = self.conn.lock().await;
 
         // Build and execute query based on whether we have a domain filter
-        let json_results: Vec<String> = match domain_filter {
-            Some(domain) => {
-                let mut stmt = conn
-                    .prepare(
-                        "SELECT lc.context_json
-                         FROM vec_contexts vc
-                         JOIN learning_contexts lc ON vc.key = lc.key
-                         WHERE lc.domain = ?2
-                         ORDER BY vec_distance_cosine(vc.embedding, ?1) ASC
-                         LIMIT ?3",
-                    )
-                    .map_err(|e| StorageError::query(format!("Failed to prepare search query: {e}")))?;
+        let json_results: Vec<String> = if let Some(domain) = domain_filter {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT lc.context_json
+                     FROM vec_contexts vc
+                     JOIN learning_contexts lc ON vc.key = lc.key
+                     WHERE lc.domain = ?2
+                     ORDER BY vec_distance_cosine(vc.embedding, ?1) ASC
+                     LIMIT ?3",
+                )
+                .map_err(|e| StorageError::query(format!("Failed to prepare search query: {e}")))?;
 
-                let results: Vec<String> = stmt
-                    .query_map(params![embedding_blob, domain.as_str(), limit as i64], |row| {
-                        row.get::<_, String>(0)
-                    })
-                    .map_err(|e| StorageError::query(format!("Failed to execute search: {e}")))?
-                    .filter_map(std::result::Result::ok)
-                    .collect();
-                results
-            }
-            None => {
-                let mut stmt = conn
-                    .prepare(
-                        "SELECT lc.context_json
-                         FROM vec_contexts vc
-                         JOIN learning_contexts lc ON vc.key = lc.key
-                         ORDER BY vec_distance_cosine(vc.embedding, ?1) ASC
-                         LIMIT ?2",
-                    )
-                    .map_err(|e| StorageError::query(format!("Failed to prepare search query: {e}")))?;
+            let results: Vec<String> = stmt
+                .query_map(params![embedding_blob, domain.as_str(), limit as i64], |row| {
+                    row.get::<_, String>(0)
+                })
+                .map_err(|e| StorageError::query(format!("Failed to execute search: {e}")))?
+                .filter_map(std::result::Result::ok)
+                .collect();
+            results
+        } else {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT lc.context_json
+                     FROM vec_contexts vc
+                     JOIN learning_contexts lc ON vc.key = lc.key
+                     ORDER BY vec_distance_cosine(vc.embedding, ?1) ASC
+                     LIMIT ?2",
+                )
+                .map_err(|e| StorageError::query(format!("Failed to prepare search query: {e}")))?;
 
-                let results: Vec<String> = stmt
-                    .query_map(params![embedding_blob, limit as i64], |row| {
-                        row.get::<_, String>(0)
-                    })
-                    .map_err(|e| StorageError::query(format!("Failed to execute search: {e}")))?
-                    .filter_map(std::result::Result::ok)
-                    .collect();
-                results
-            }
+            let results: Vec<String> = stmt
+                .query_map(params![embedding_blob, limit as i64], |row| {
+                    row.get::<_, String>(0)
+                })
+                .map_err(|e| StorageError::query(format!("Failed to execute search: {e}")))?
+                .filter_map(std::result::Result::ok)
+                .collect();
+            results
         };
 
         let contexts: Vec<LearningContext> = json_results
@@ -513,44 +508,41 @@ impl SqliteVecStore {
         let conn = self.conn.lock().await;
 
         // Collect results with embeddings based on domain filter
-        let rows: Vec<(String, Vec<u8>)> = match domain_filter {
-            Some(domain) => {
-                let mut stmt = conn
-                    .prepare(
-                        "SELECT lc.context_json, ce.embedding
-                         FROM learning_contexts lc
-                         JOIN context_embeddings ce ON lc.key = ce.key
-                         WHERE lc.domain = ?1",
-                    )
-                    .map_err(|e| StorageError::query(format!("Failed to prepare statement: {e}")))?;
+        let rows: Vec<(String, Vec<u8>)> = if let Some(domain) = domain_filter {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT lc.context_json, ce.embedding
+                     FROM learning_contexts lc
+                     JOIN context_embeddings ce ON lc.key = ce.key
+                     WHERE lc.domain = ?1",
+                )
+                .map_err(|e| StorageError::query(format!("Failed to prepare statement: {e}")))?;
 
-                let results: Vec<(String, Vec<u8>)> = stmt
-                    .query_map(params![domain.as_str()], |row| {
-                        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
-                    })
-                    .map_err(|e| StorageError::query(format!("Failed to query contexts: {e}")))?
-                    .filter_map(std::result::Result::ok)
-                    .collect();
-                results
-            }
-            None => {
-                let mut stmt = conn
-                    .prepare(
-                        "SELECT lc.context_json, ce.embedding
-                         FROM learning_contexts lc
-                         JOIN context_embeddings ce ON lc.key = ce.key",
-                    )
-                    .map_err(|e| StorageError::query(format!("Failed to prepare statement: {e}")))?;
+            let results: Vec<(String, Vec<u8>)> = stmt
+                .query_map(params![domain.as_str()], |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+                })
+                .map_err(|e| StorageError::query(format!("Failed to query contexts: {e}")))?
+                .filter_map(std::result::Result::ok)
+                .collect();
+            results
+        } else {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT lc.context_json, ce.embedding
+                     FROM learning_contexts lc
+                     JOIN context_embeddings ce ON lc.key = ce.key",
+                )
+                .map_err(|e| StorageError::query(format!("Failed to prepare statement: {e}")))?;
 
-                let results: Vec<(String, Vec<u8>)> = stmt
-                    .query_map([], |row| {
-                        Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
-                    })
-                    .map_err(|e| StorageError::query(format!("Failed to query contexts: {e}")))?
-                    .filter_map(std::result::Result::ok)
-                    .collect();
-                results
-            }
+            let results: Vec<(String, Vec<u8>)> = stmt
+                .query_map([], |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, Vec<u8>>(1)?))
+                })
+                .map_err(|e| StorageError::query(format!("Failed to query contexts: {e}")))?
+                .filter_map(std::result::Result::ok)
+                .collect();
+            results
         };
 
         // Calculate similarities and sort
