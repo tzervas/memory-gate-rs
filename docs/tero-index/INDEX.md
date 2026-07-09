@@ -3,13 +3,13 @@
 > **Honesty:** Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.
 > Use this index to find where to Read, not as authoritative ground truth.
 
-- **Items:** 67
+- **Items:** 68
 - **Flagged:** 0
 - **item_tag:** `Empirical/Declared`
 - **Machine index:** [`index.json`](./index.json)
 - **Manifest:** [`MANIFEST.toml`](./MANIFEST.toml)
 
-## doc (51 entries)
+## doc (52 entries)
 
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
@@ -19,6 +19,7 @@
 | `agents--working-with-cabal-devmelopner-agent-tool` | section | — | Working with cabal-devmelopner agent tool | `AGENTS.md:26` | — | This project is prepared for integration: |
 | `agents--local-checks` | section | — | Local checks | `AGENTS.md:38` | — | Look for: |
 | `agents--further-reading` | section | — | Further reading | `AGENTS.md:46` | — | - README.md |
+| `agents--latest-m1-w2-facade-2026-07-09-pr-26` | section | — | Latest (M1 + W2 Facade, 2026-07-09 PR #26) | `AGENTS.md:56` | — | M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware… |
 | `contributing` | section | — | Contributing to memory-gate-rs | `CONTRIBUTING.md:1` | — | Thank you for your interest in contributing to memory-gate-rs! This document provides |
 | `contributing--code-of-conduct` | section | — | Code of Conduct | `CONTRIBUTING.md:6` | — | This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). |
 | `contributing--getting-started` | section | — | Getting Started | `CONTRIBUTING.md:11` | — | - Rust 1.92 or later (check with rustc --version) |

@@ -64,6 +64,16 @@
       "summary": "- README.md"
     },
     {
+      "anchor": "agents--latest-m1-w2-facade-2026-07-09-pr-26",
+      "family": "doc",
+      "kind": "section",
+      "title": "Latest (M1 + W2 Facade, 2026-07-09 PR #26)",
+      "file": "AGENTS.md",
+      "line": 56,
+      "tag": "Empirical/Declared",
+      "summary": "M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware…"
+    },
+    {
       "anchor": "contributing",
       "family": "doc",
       "kind": "section",

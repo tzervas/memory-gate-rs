@@ -284,7 +284,7 @@ let py_mem = gateway.retrieve_context("contextlib", 3, Some(AgentDomain::LangPyt
 
 Update AGENTS/CHANGELOG per dev-workflow. Lang docs dual-index later (M3). Escalate adapters/prompts/schemas.
 
-Citations: tero memory-gate-rs `readme--agent-domains`, kickoffs/mint.md (M1 table).
+Citations: tero memory-gate-rs `readme--agent-domains`, kickoffs/mint.md (M1 table). PR #26 (feature/mint-m1-domain-facade) + W2 facade integration + compact state (2026-07-09 wave).
 ```
 
 ## License
