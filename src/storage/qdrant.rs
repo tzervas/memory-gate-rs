@@ -202,7 +202,7 @@ impl QdrantStore {
 
     /// Generate embedding for text content.
     async fn embed(&self, text: &str) -> Result<Vec<f32>> {
-        let embedder = self.embedder.read().await;
+        let mut embedder = self.embedder.write().await;
         let embeddings = embedder
             .embed(vec![text], None)
             .map_err(|e| StorageError::backend(format!("Failed to generate embedding: {e}")))?;

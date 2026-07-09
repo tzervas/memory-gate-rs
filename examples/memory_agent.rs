@@ -1,6 +1,6 @@
 //! Memory-enabled agent example
 //!
-//! Run with: cargo run --example memory_agent
+//! Run with: cargo run --example `memory_agent`
 
 use memory_gate_rs::{
     adapters::PassthroughAdapter, agents::BaseMemoryAgent, storage::InMemoryStore, AgentDomain,
@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
 
     for task in tasks {
         println!("\n--- Processing Task ---");
-        println!("Task: {}", task);
+        println!("Task: {task}");
 
         // Process task with an executor function
         let output = agent
@@ -59,7 +59,7 @@ async fn main() -> Result<()> {
         println!("Confidence: {:.2}", output.confidence);
         println!("Memories used: {}", output.memories_used);
         if let Some(key) = &output.stored_key {
-            println!("Stored as: {}", key);
+            println!("Stored as: {key}");
         }
     }
 

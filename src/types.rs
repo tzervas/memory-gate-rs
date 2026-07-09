@@ -315,7 +315,7 @@ impl Default for GatewayConfig {
     fn default() -> Self {
         Self {
             consolidation_enabled: true,
-            consolidation_interval: Duration::from_secs(3600), // 1 hour
+            consolidation_interval: Duration::from_hours(1), // 1 hour
             low_importance_threshold: 0.2,
             age_threshold_days: 30,
             retrieval_limit: 10,
