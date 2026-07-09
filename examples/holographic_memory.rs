@@ -58,7 +58,7 @@ fn demo_vsa_operations() {
     // Germany record: country->germany + capital->berlin
     let germany_country = country.bind(&germany);
     let germany_capital = capital.bind(&berlin);
-    let germany_record = germany_country.bundle(&germany_capital);
+    let _germany_record = germany_country.bundle(&germany_capital);
 
     println!("\nCreated country records using bind + bundle");
 

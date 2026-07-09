@@ -55,11 +55,7 @@ impl InMemoryStore {
         }
     }
 
-    /// Get read access to the underlying data for testing.
-    #[cfg(test)]
-    pub(crate) async fn data(&self) -> tokio::sync::RwLockReadGuard<'_, HashMap<String, LearningContext>> {
-        self.data.read().await
-    }
+
 }
 
 #[async_trait]

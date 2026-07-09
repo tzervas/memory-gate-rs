@@ -7,7 +7,6 @@ use memory_gate_rs::{
     storage::InMemoryStore, AgentDomain, GatewayConfig, LearningContext,
     MemoryGateway, MemoryAdapter, Result,
 };
-use std::collections::HashMap;
 
 /// A custom adapter that boosts importance for security-related content
 #[derive(Clone, Default)]

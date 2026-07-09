@@ -314,8 +314,8 @@ mod tests {
         
         // Add some symbols
         let target = cb.get_or_create("target");
-        cb.get_or_create("other1");
-        cb.get_or_create("other2");
+        let _ = cb.get_or_create("other1");
+        let _ = cb.get_or_create("other2");
         
         // Add some noise to target
         let noisy = target.bundle(&HolographicVector::random_bipolar(10000));
