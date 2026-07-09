@@ -58,3 +58,10 @@ M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain exten
 Docs + tero-index in PR. Run pr-review (adapted: M1 domains/tero/W2/C0/dev-workflow/guards). Merge if good.
 Update docs + tero in PR process per task. Compact state captured.
 
+## Post #26 merge + propagate (2026-07-09)
+- Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted.
+- Dev land to main (incl #26 M1 facade + W2 refs); sync pulls.
+- Tero cites + append-only followed. Mirror: M1 AgentDomain/facade parallels cabal CommonMemory W2 facade (domain scoping key).
+- Refs: dev-docs/waves/wsfull-wave-2026-07-09-compact.md (wsfull state, C0/M1/W2/local-ollama), WORKSPACE_CABAL_TERO_READINESS.md (leaf orch tranche, parameterization W2), cabal-devmelopner PRs + kickoffs.
+- Next: use /root/git/scripts/update-tero.sh ; branch-guard for any further (chore/feature -> dev PRs only).
+
