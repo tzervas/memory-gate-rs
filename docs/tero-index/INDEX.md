@@ -3,13 +3,13 @@
 > **Honesty:** Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.
 > Use this index to find where to Read, not as authoritative ground truth.
 
-- **Items:** 68
+- **Items:** 69
 - **Flagged:** 0
 - **item_tag:** `Empirical/Declared`
 - **Machine index:** [`index.json`](./index.json)
 - **Manifest:** [`MANIFEST.toml`](./MANIFEST.toml)
 
-## doc (52 entries)
+## doc (53 entries)
 
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
@@ -20,6 +20,7 @@
 | `agents--local-checks` | section | — | Local checks | `AGENTS.md:38` | — | Look for: |
 | `agents--further-reading` | section | — | Further reading | `AGENTS.md:46` | — | - README.md |
 | `agents--latest-m1-w2-facade-2026-07-09-pr-26` | section | — | Latest (M1 + W2 Facade, 2026-07-09 PR #26) | `AGENTS.md:56` | — | M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware… |
+| `agents--post-26-merge-propagate-2026-07-09` | section | — | Post #26 merge + propagate (2026-07-09) | `AGENTS.md:61` | — | - Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted. |
 | `contributing` | section | — | Contributing to memory-gate-rs | `CONTRIBUTING.md:1` | — | Thank you for your interest in contributing to memory-gate-rs! This document provides |
 | `contributing--code-of-conduct` | section | — | Code of Conduct | `CONTRIBUTING.md:6` | — | This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). |
 | `contributing--getting-started` | section | — | Getting Started | `CONTRIBUTING.md:11` | — | - Rust 1.92 or later (check with rustc --version) |
@@ -63,8 +64,8 @@
 | `readme--custom-storage-backends` | section | — | Custom Storage Backends | `README.md:216` | — | Implement KnowledgeStore for custom storage: |
 | `readme--integration-with-rust-ai-ecosystem` | section | — | Integration with rust-ai Ecosystem | `README.md:255` | — | memory-gate-rs integrates with the broader rust-ai crate ecosystem: |
 | `readme--m1-domain-facade-design-mint-kickoff` | section | — | M1: Domain + Facade Design (mint kickoff) | `README.md:264` | — | Status: Executed (M1). See types::AgentDomain extensions + tero first queries. |
-| `readme--license` | section | — | License | `README.md:290` | — | MIT License - see [LICENSE-MIT](LICENSE-MIT) |
-| `readme--contributing` | section | — | Contributing | `README.md:294` | — | Contributions welcome! Please read CONTRIBUTING.md first. |
+| `readme--license` | section | — | License | `README.md:291` | — | MIT License - see [LICENSE-MIT](LICENSE-MIT) |
+| `readme--contributing` | section | — | Contributing | `README.md:295` | — | Contributions welcome! Please read CONTRIBUTING.md first. |
 
 ## changelog (16 entries)
 

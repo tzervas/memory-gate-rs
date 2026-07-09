@@ -74,6 +74,16 @@
       "summary": "M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware…"
     },
     {
+      "anchor": "agents--post-26-merge-propagate-2026-07-09",
+      "family": "doc",
+      "kind": "section",
+      "title": "Post #26 merge + propagate (2026-07-09)",
+      "file": "AGENTS.md",
+      "line": 61,
+      "tag": "Empirical/Declared",
+      "summary": "- Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted."
+    },
+    {
       "anchor": "contributing",
       "family": "doc",
       "kind": "section",
@@ -508,7 +518,7 @@
       "kind": "section",
       "title": "License",
       "file": "README.md",
-      "line": 290,
+      "line": 291,
       "tag": "Empirical/Declared",
       "summary": "MIT License - see [LICENSE-MIT](LICENSE-MIT)"
     },
@@ -518,7 +528,7 @@
       "kind": "section",
       "title": "Contributing",
       "file": "README.md",
-      "line": 294,
+      "line": 295,
       "tag": "Empirical/Declared",
       "summary": "Contributions welcome! Please read CONTRIBUTING.md first."
     },
