@@ -1,0 +1,587 @@
+{
+  "generated": "Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.",
+  "item_tag": "Empirical/Declared",
+  "siblings": [],
+  "items": [
+    {
+      "anchor": "contributing",
+      "family": "doc",
+      "kind": "section",
+      "title": "Contributing to memory-gate-rs",
+      "file": "CONTRIBUTING.md",
+      "line": 1,
+      "tag": "Empirical/Declared",
+      "summary": "Thank you for your interest in contributing to memory-gate-rs! This document provides"
+    },
+    {
+      "anchor": "contributing--code-of-conduct",
+      "family": "doc",
+      "kind": "section",
+      "title": "Code of Conduct",
+      "file": "CONTRIBUTING.md",
+      "line": 6,
+      "tag": "Empirical/Declared",
+      "summary": "This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct)."
+    },
+    {
+      "anchor": "contributing--getting-started",
+      "family": "doc",
+      "kind": "section",
+      "title": "Getting Started",
+      "file": "CONTRIBUTING.md",
+      "line": 11,
+      "tag": "Empirical/Declared",
+      "summary": "- Rust 1.92 or later (check with rustc --version)"
+    },
+    {
+      "anchor": "contributing--prerequisites",
+      "family": "doc",
+      "kind": "section",
+      "title": "Prerequisites",
+      "file": "CONTRIBUTING.md",
+      "line": 13,
+      "tag": "Empirical/Declared",
+      "summary": "- Rust 1.92 or later (check with rustc --version)"
+    },
+    {
+      "anchor": "contributing--development-setup",
+      "family": "doc",
+      "kind": "section",
+      "title": "Development Setup",
+      "file": "CONTRIBUTING.md",
+      "line": 19,
+      "tag": "Empirical/Declared",
+      "summary": "git clone https://github.com/tzervas/memory-gate-rs.git"
+    },
+    {
+      "anchor": "contributing--clone-the-repository",
+      "family": "doc",
+      "kind": "other",
+      "title": "Clone the repository",
+      "file": "CONTRIBUTING.md",
+      "line": 22,
+      "tag": "Empirical/Declared",
+      "summary": "git clone https://github.com/tzervas/memory-gate-rs.git"
+    },
+    {
+      "anchor": "contributing--build-with-all-features",
+      "family": "doc",
+      "kind": "other",
+      "title": "Build with all features",
+      "file": "CONTRIBUTING.md",
+      "line": 26,
+      "tag": "Empirical/Declared",
+      "summary": "cargo build --all-features"
+    },
+    {
+      "anchor": "contributing--run-tests",
+      "family": "doc",
+      "kind": "other",
+      "title": "Run tests",
+      "file": "CONTRIBUTING.md",
+      "line": 29,
+      "tag": "Empirical/Declared",
+      "summary": "cargo test --all-features"
+    },
+    {
+      "anchor": "contributing--run-clippy-we-enforce-clippypedantic",
+      "family": "doc",
+      "kind": "other",
+      "title": "Run clippy (we enforce clippy::pedantic)",
+      "file": "CONTRIBUTING.md",
+      "line": 32,
+      "tag": "Empirical/Declared",
+      "summary": "cargo clippy --all-features"
+    },
+    {
+      "anchor": "contributing--build-documentation",
+      "family": "doc",
+      "kind": "other",
+      "title": "Build documentation",
+      "file": "CONTRIBUTING.md",
+      "line": 35,
+      "tag": "Empirical/Declared",
+      "summary": "cargo doc --all-features --no-deps --open"
+    },
+    {
+      "anchor": "contributing--development-guidelines",
+      "family": "doc",
+      "kind": "section",
+      "title": "Development Guidelines",
+      "file": "CONTRIBUTING.md",
+      "line": 39,
+      "tag": "Empirical/Declared",
+      "summary": "We use rustfmt for formatting and clippy with strict lints:"
+    },
+    {
+      "anchor": "contributing--code-style",
+      "family": "doc",
+      "kind": "section",
+      "title": "Code Style",
+      "file": "CONTRIBUTING.md",
+      "line": 41,
+      "tag": "Empirical/Declared",
+      "summary": "We use rustfmt for formatting and clippy with strict lints:"
+    },
+    {
+      "anchor": "contributing--format-code",
+      "family": "doc",
+      "kind": "other",
+      "title": "Format code",
+      "file": "CONTRIBUTING.md",
+      "line": 46,
+      "tag": "Empirical/Declared",
+      "summary": "cargo fmt"
+    },
+    {
+      "anchor": "contributing--check-lints-must-pass-with-no-warnings",
+      "family": "doc",
+      "kind": "other",
+      "title": "Check lints (must pass with no warnings)",
+      "file": "CONTRIBUTING.md",
+      "line": 49,
+      "tag": "Empirical/Declared",
+      "summary": "cargo clippy --all-features"
+    },
+    {
+      "anchor": "contributing--documentation-requirements",
+      "family": "doc",
+      "kind": "section",
+      "title": "Documentation Requirements",
+      "file": "CONTRIBUTING.md",
+      "line": 60,
+      "tag": "Empirical/Declared",
+      "summary": "Undocumented code is incomplete code."
+    },
+    {
+      "anchor": "contributing--testing",
+      "family": "doc",
+      "kind": "section",
+      "title": "Testing",
+      "file": "CONTRIBUTING.md",
+      "line": 104,
+      "tag": "Empirical/Declared",
+      "summary": "- Write unit tests for all new functionality"
+    },
+    {
+      "anchor": "contributing--commit-messages",
+      "family": "doc",
+      "kind": "section",
+      "title": "Commit Messages",
+      "file": "CONTRIBUTING.md",
+      "line": 111,
+      "tag": "Empirical/Declared",
+      "summary": "Use conventional commit format:"
+    },
+    {
+      "anchor": "contributing--pull-requests",
+      "family": "doc",
+      "kind": "section",
+      "title": "Pull Requests",
+      "file": "CONTRIBUTING.md",
+      "line": 130,
+      "tag": "Empirical/Declared",
+      "summary": "1. Fork the repository"
+    },
+    {
+      "anchor": "contributing--feature-development",
+      "family": "doc",
+      "kind": "section",
+      "title": "Feature Development",
+      "file": "CONTRIBUTING.md",
+      "line": 142,
+      "tag": "Empirical/Declared",
+      "summary": "1. Create a new module in src/storage/"
+    },
+    {
+      "anchor": "contributing--adding-a-new-storage-backend",
+      "family": "doc",
+      "kind": "section",
+      "title": "Adding a New Storage Backend",
+      "file": "CONTRIBUTING.md",
+      "line": 144,
+      "tag": "Empirical/Declared",
+      "summary": "1. Create a new module in src/storage/"
+    },
+    {
+      "anchor": "contributing--adding-a-new-adapter",
+      "family": "doc",
+      "kind": "section",
+      "title": "Adding a New Adapter",
+      "file": "CONTRIBUTING.md",
+      "line": 154,
+      "tag": "Empirical/Declared",
+      "summary": "1. Create a new module in src/adapters/"
+    },
+    {
+      "anchor": "contributing--questions",
+      "family": "doc",
+      "kind": "section",
+      "title": "Questions?",
+      "file": "CONTRIBUTING.md",
+      "line": 161,
+      "tag": "Empirical/Declared",
+      "summary": "- Open an issue for bugs or feature requests"
+    },
+    {
+      "anchor": "contributing--license",
+      "family": "doc",
+      "kind": "section",
+      "title": "License",
+      "file": "CONTRIBUTING.md",
+      "line": 167,
+      "tag": "Empirical/Declared",
+      "summary": "By contributing, you agree that your contributions will be licensed under the MIT License."
+    },
+    {
+      "anchor": "readme",
+      "family": "doc",
+      "kind": "other",
+      "title": "memory-gate-rs",
+      "file": "README.md",
+      "line": 1,
+      "tag": "Empirical/Declared",
+      "summary": "[![Crates.io](https://img.shields.io/crates/v/memory-gate-rs.svg)](https://crates.io/crates/memory-gate-rs)"
+    },
+    {
+      "anchor": "readme--overview",
+      "family": "doc",
+      "kind": "section",
+      "title": "Overview",
+      "file": "README.md",
+      "line": 9,
+      "tag": "Empirical/Declared",
+      "summary": "Memory-gate provides a production-ready memory layer for AI agents, solving the fundamental problem of stateless AI by enabling:"
+    },
+    {
+      "anchor": "readme--architecture-complementary-learning-systems-cls",
+      "family": "doc",
+      "kind": "section",
+      "title": "Architecture: Complementary Learning Systems (CLS)",
+      "file": "README.md",
+      "line": 18,
+      "tag": "Empirical/Declared",
+      "summary": "Inspired by neuroscience research on brain plasticity, memory-gate implements a dual-stream architecture:"
+    },
+    {
+      "anchor": "readme--installation",
+      "family": "doc",
+      "kind": "section",
+      "title": "Installation",
+      "file": "README.md",
+      "line": 25,
+      "tag": "Empirical/Declared",
+      "summary": "[dependencies]"
+    },
+    {
+      "anchor": "readme--feature-flags",
+      "family": "doc",
+      "kind": "section",
+      "title": "Feature Flags",
+      "file": "README.md",
+      "line": 32,
+      "tag": "Empirical/Declared"
+    },
+    {
+      "anchor": "readme--quick-start",
+      "family": "doc",
+      "kind": "section",
+      "title": "Quick Start",
+      "file": "README.md",
+      "line": 42,
+      "tag": "Empirical/Declared",
+      "summary": "use memorygaters::{"
+    },
+    {
+      "anchor": "readme--core-concepts",
+      "family": "doc",
+      "kind": "section",
+      "title": "Core Concepts",
+      "file": "README.md",
+      "line": 80,
+      "tag": "Empirical/Declared",
+      "summary": "The atomic unit of memory containing learned content:"
+    },
+    {
+      "anchor": "readme--learningcontext",
+      "family": "doc",
+      "kind": "section",
+      "title": "LearningContext",
+      "file": "README.md",
+      "line": 82,
+      "tag": "Empirical/Declared",
+      "summary": "The atomic unit of memory containing learned content:"
+    },
+    {
+      "anchor": "readme--agent-domains",
+      "family": "doc",
+      "kind": "section",
+      "title": "Agent Domains",
+      "file": "README.md",
+      "line": 96,
+      "tag": "Empirical/Declared",
+      "summary": "Categorize memories by operational domain:"
+    },
+    {
+      "anchor": "readme--memory-gateway",
+      "family": "doc",
+      "kind": "section",
+      "title": "Memory Gateway",
+      "file": "README.md",
+      "line": 110,
+      "tag": "Empirical/Declared",
+      "summary": "Central orchestrator for learning and memory operations:"
+    },
+    {
+      "anchor": "readme--consolidation",
+      "family": "doc",
+      "kind": "section",
+      "title": "Consolidation",
+      "file": "README.md",
+      "line": 127,
+      "tag": "Empirical/Declared",
+      "summary": "Background process that maintains memory health:"
+    },
+    {
+      "anchor": "readme--storage-backends",
+      "family": "doc",
+      "kind": "section",
+      "title": "Storage Backends",
+      "file": "README.md",
+      "line": 135,
+      "tag": "Empirical/Declared",
+      "summary": "Simple HashMap-based storage for testing and development:"
+    },
+    {
+      "anchor": "readme--in-memory-default",
+      "family": "doc",
+      "kind": "section",
+      "title": "In-Memory (default)",
+      "file": "README.md",
+      "line": 137,
+      "tag": "Empirical/Declared",
+      "summary": "Simple HashMap-based storage for testing and development:"
+    },
+    {
+      "anchor": "readme--qdrant-feature-qdrant",
+      "family": "doc",
+      "kind": "section",
+      "title": "Qdrant (feature: `qdrant`)",
+      "file": "README.md",
+      "line": 147,
+      "tag": "Empirical/Declared",
+      "summary": "Production vector database with semantic search:"
+    },
+    {
+      "anchor": "readme--sqlite-vector-feature-sqlite-vec",
+      "family": "doc",
+      "kind": "section",
+      "title": "SQLite + Vector (feature: `sqlite-vec`)",
+      "file": "README.md",
+      "line": 157,
+      "tag": "Empirical/Declared",
+      "summary": "Embedded vector storage with SQLite:"
+    },
+    {
+      "anchor": "readme--metrics-feature-metrics",
+      "family": "doc",
+      "kind": "section",
+      "title": "Metrics (feature: `metrics`)",
+      "file": "README.md",
+      "line": 167,
+      "tag": "Empirical/Declared",
+      "summary": "Prometheus-compatible metrics:"
+    },
+    {
+      "anchor": "readme--custom-adapters",
+      "family": "doc",
+      "kind": "section",
+      "title": "Custom Adapters",
+      "file": "README.md",
+      "line": 179,
+      "tag": "Empirical/Declared",
+      "summary": "Implement MemoryAdapter for custom knowledge transformation:"
+    },
+    {
+      "anchor": "readme--custom-storage-backends",
+      "family": "doc",
+      "kind": "section",
+      "title": "Custom Storage Backends",
+      "file": "README.md",
+      "line": 204,
+      "tag": "Empirical/Declared",
+      "summary": "Implement KnowledgeStore for custom storage:"
+    },
+    {
+      "anchor": "readme--integration-with-rust-ai-ecosystem",
+      "family": "doc",
+      "kind": "section",
+      "title": "Integration with rust-ai Ecosystem",
+      "file": "README.md",
+      "line": 243,
+      "tag": "Empirical/Declared",
+      "summary": "memory-gate-rs integrates with the broader rust-ai crate ecosystem:"
+    },
+    {
+      "anchor": "readme--license",
+      "family": "doc",
+      "kind": "section",
+      "title": "License",
+      "file": "README.md",
+      "line": 252,
+      "tag": "Empirical/Declared",
+      "summary": "MIT License - see [LICENSE-MIT](LICENSE-MIT)"
+    },
+    {
+      "anchor": "readme--contributing",
+      "family": "doc",
+      "kind": "section",
+      "title": "Contributing",
+      "file": "README.md",
+      "line": 256,
+      "tag": "Empirical/Declared",
+      "summary": "Contributions welcome! Please read CONTRIBUTING.md first."
+    },
+    {
+      "anchor": "changelog",
+      "family": "changelog",
+      "kind": "entry",
+      "title": "Changelog",
+      "file": "CHANGELOG.md",
+      "line": 1,
+      "tag": "Empirical/Declared",
+      "summary": "All notable changes to this project will be documented in this file."
+    },
+    {
+      "anchor": "changelog--1.0.0-2026-01-25",
+      "family": "changelog",
+      "kind": "section",
+      "title": "[1.0.0] - 2026-01-25",
+      "file": "CHANGELOG.md",
+      "line": 8,
+      "tag": "Empirical/Declared",
+      "summary": "- MemoryGateway - Central orchestrator for learning and retrieval operations"
+    },
+    {
+      "anchor": "changelog--added",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Added",
+      "file": "CHANGELOG.md",
+      "line": 10,
+      "tag": "Empirical/Declared",
+      "summary": "- MemoryGateway - Central orchestrator for learning and retrieval operations"
+    },
+    {
+      "anchor": "changelog--core-memory-system",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Core Memory System",
+      "file": "CHANGELOG.md",
+      "line": 12,
+      "tag": "Empirical/Declared",
+      "summary": "- MemoryGateway - Central orchestrator for learning and retrieval operations"
+    },
+    {
+      "anchor": "changelog--storage-backends",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Storage Backends",
+      "file": "CHANGELOG.md",
+      "line": 19,
+      "tag": "Empirical/Declared",
+      "summary": "- InMemoryStore - HashMap-based storage for testing and development (default)"
+    },
+    {
+      "anchor": "changelog--trait-system",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Trait System",
+      "file": "CHANGELOG.md",
+      "line": 24,
+      "tag": "Empirical/Declared",
+      "summary": "- KnowledgeStore - Core storage interface for any backend"
+    },
+    {
+      "anchor": "changelog--vector-symbolic-architecture-vsa",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Vector Symbolic Architecture (VSA)",
+      "file": "CHANGELOG.md",
+      "line": 32,
+      "tag": "Empirical/Declared",
+      "summary": "- HolographicVector - High-dimensional vectors for compositional memory"
+    },
+    {
+      "anchor": "changelog--adapters",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Adapters",
+      "file": "CHANGELOG.md",
+      "line": 40,
+      "tag": "Empirical/Declared",
+      "summary": "- PassthroughAdapter - Identity adapter for direct storage"
+    },
+    {
+      "anchor": "changelog--agents",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Agents",
+      "file": "CHANGELOG.md",
+      "line": 43,
+      "tag": "Empirical/Declared",
+      "summary": "- BaseMemoryAgent - Foundation for building memory-enabled agents"
+    },
+    {
+      "anchor": "changelog--observability-feature-metrics",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Observability (feature: `metrics`)",
+      "file": "CHANGELOG.md",
+      "line": 47,
+      "tag": "Empirical/Declared",
+      "summary": "- Prometheus metrics for store operations, consolidation, and retrieval"
+    },
+    {
+      "anchor": "changelog--changed",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Changed",
+      "file": "CHANGELOG.md",
+      "line": 51,
+      "tag": "Empirical/Declared",
+      "summary": "- MSRV updated to Rust 1.92"
+    },
+    {
+      "anchor": "changelog--experimental",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Experimental",
+      "file": "CHANGELOG.md",
+      "line": 56,
+      "tag": "Empirical/Declared",
+      "summary": "- vsa-accel feature for rust-ai ecosystem acceleration (awaiting stable dependencies)"
+    },
+    {
+      "anchor": "changelog--0.1.0-2025-01-01",
+      "family": "changelog",
+      "kind": "section",
+      "title": "[0.1.0] - 2025-01-01",
+      "file": "CHANGELOG.md",
+      "line": 60,
+      "tag": "Empirical/Declared",
+      "summary": "- Initial release with basic memory gateway functionality"
+    },
+    {
+      "anchor": "changelog--added-2",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Added",
+      "file": "CHANGELOG.md",
+      "line": 62,
+      "tag": "Empirical/Declared",
+      "summary": "- Initial release with basic memory gateway functionality"
+    }
+  ],
+  "flagged": []
+}
