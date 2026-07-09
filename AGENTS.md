@@ -53,3 +53,8 @@ Run checks before considering work complete.
 
 Leave mycelium isolated; all coordination here targets the other repos + cabal.
 
+## Latest (M1 + W2 Facade, 2026-07-09 PR #26)
+M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware FromStr for "layer:tero", "lang:rust", "repo:xxx" unified facade scoping). Thin facade via domain filters on retrieve/ingest (tero-first cited + gate persistent scoped, no bloat). W2 integration: domain as scoping key for shared StructuredResponse schemas (escalated to wsfull). Tero reindex + doc/AGENTS/kickoff updates. PR #26. See dev-workflow, guards (branch/worktree), dev-docs/waves/wsfull-wave-2026-07-09-compact.md (compacted state), WORKSPACE_CABAL_TERO_READINESS.md.
+Docs + tero-index in PR. Run pr-review (adapted: M1 domains/tero/W2/C0/dev-workflow/guards). Merge if good.
+Update docs + tero in PR process per task. Compact state captured.
+

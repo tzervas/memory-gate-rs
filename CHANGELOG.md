@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - M1 domain/facade (mint kickoff)
+
+### Added (M1)
+- Extended `AgentDomain` with workspace integration domains: `Workspace`, `Tero`, `Context`, `MemoryGate`, `LangRust`, `LangPython`.
+- Prefix-aware `FromStr` (e.g. "layer:tero", "lang:rust", "repo:foo") for unified scoping/facade.
+- Updated `all()`, `as_str()`, VSA encoding, tests, README (tero-cited `readme--agent-domains`).
+- Facade design documented: domain-filtered retrieve + ingest from tero/context for tero-first + gate scoping + no-bloat. Thin glue via existing API + MCP/scripts. Shared schemas escalated to wsfull.
+- Tero-first: queries on "domain","memory","gate"; cited + read_file on paths.
+- Dev-workflow: branch feature/mint-m1-..., cargo test green, append-only changelog.
+
+See mint.md M1, memory-gate-rs README M1 section. Status: M1 complete; M2 pending.
+
 ## [1.0.0] - 2026-01-25
 
 ### Added
