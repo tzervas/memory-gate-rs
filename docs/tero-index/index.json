@@ -59,7 +59,7 @@
       "kind": "section",
       "title": "Further reading",
       "file": "AGENTS.md",
-      "line": 46,
+      "line": 47,
       "tag": "Empirical/Declared",
       "summary": "- README.md"
     },
@@ -69,7 +69,7 @@
       "kind": "section",
       "title": "Latest (M1 + W2 Facade, 2026-07-09 PR #26)",
       "file": "AGENTS.md",
-      "line": 56,
+      "line": 57,
       "tag": "Empirical/Declared",
       "summary": "M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware…"
     },
@@ -79,9 +79,19 @@
       "kind": "section",
       "title": "Post #26 merge + propagate (2026-07-09)",
       "file": "AGENTS.md",
-      "line": 61,
+      "line": 62,
       "tag": "Empirical/Declared",
       "summary": "- Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted."
+    },
+    {
+      "anchor": "agents--w2-facade-evolution-commonmemory-mirror-stub-chore-w2-rollout-docs-wiring",
+      "family": "doc",
+      "kind": "section",
+      "title": "W2 Facade Evolution + CommonMemory Mirror Stub (chore/w2-rollout-docs-wiring)",
+      "file": "AGENTS.md",
+      "line": 69,
+      "tag": "Empirical/Declared",
+      "summary": "Per plan.md w2-rollout + dev-docs/schemas/ (read: W2-STRUCTURED-SCHEMAS.md, commonmemoryfacade.rs.example, cabal schemas/agent current impl, memory types.rs M1…"
     },
     {
       "anchor": "contributing",
@@ -269,7 +279,7 @@
       "kind": "section",
       "title": "Feature Development",
       "file": "CONTRIBUTING.md",
-      "line": 142,
+      "line": 143,
       "tag": "Empirical/Declared",
       "summary": "1. Create a new module in src/storage/"
     },
@@ -279,7 +289,7 @@
       "kind": "section",
       "title": "Adding a New Storage Backend",
       "file": "CONTRIBUTING.md",
-      "line": 144,
+      "line": 145,
       "tag": "Empirical/Declared",
       "summary": "1. Create a new module in src/storage/"
     },
@@ -289,7 +299,7 @@
       "kind": "section",
       "title": "Adding a New Adapter",
       "file": "CONTRIBUTING.md",
-      "line": 154,
+      "line": 155,
       "tag": "Empirical/Declared",
       "summary": "1. Create a new module in src/adapters/"
     },
@@ -299,7 +309,7 @@
       "kind": "section",
       "title": "Questions?",
       "file": "CONTRIBUTING.md",
-      "line": 161,
+      "line": 162,
       "tag": "Empirical/Declared",
       "summary": "- Open an issue for bugs or feature requests"
     },
@@ -309,7 +319,7 @@
       "kind": "section",
       "title": "License",
       "file": "CONTRIBUTING.md",
-      "line": 167,
+      "line": 168,
       "tag": "Empirical/Declared",
       "summary": "By contributing, you agree that your contributions will be licensed under the MIT License."
     },
@@ -531,6 +541,77 @@
       "line": 295,
       "tag": "Empirical/Declared",
       "summary": "Contributions welcome! Please read CONTRIBUTING.md first."
+    },
+    {
+      "anchor": "roadmap",
+      "family": "doc",
+      "kind": "note",
+      "title": "memory-gate-rs — Product Roadmap",
+      "file": "docs/ROADMAP.md",
+      "line": 1,
+      "tag": "Empirical/Declared",
+      "status": "Living (2026-07-09)",
+      "summary": "Status: Living (2026-07-09)"
+    },
+    {
+      "anchor": "roadmap--phases",
+      "family": "doc",
+      "kind": "section",
+      "title": "Phases",
+      "file": "docs/ROADMAP.md",
+      "line": 10,
+      "tag": "Empirical/Declared",
+      "summary": "- Extended AgentDomain (Workspace, Tero, Context, MemoryGate, LangRust, LangPython) + prefix-aware FromStr (\"layer:tero\", \"lang:rust\", \"repo:xxx\")."
+    },
+    {
+      "anchor": "roadmap--m1-domain-facade-design-done-2026-07-09-pr-26",
+      "family": "doc",
+      "kind": "section",
+      "title": "M1 — Domain + Facade Design (done, 2026-07-09 PR #26)",
+      "file": "docs/ROADMAP.md",
+      "line": 12,
+      "tag": "Empirical/Declared",
+      "summary": "- Extended AgentDomain (Workspace, Tero, Context, MemoryGate, LangRust, LangPython) + prefix-aware FromStr (\"layer:tero\", \"lang:rust\", \"repo:xxx\")."
+    },
+    {
+      "anchor": "roadmap--m2-pending",
+      "family": "doc",
+      "kind": "section",
+      "title": "M2 — (pending)",
+      "file": "docs/ROADMAP.md",
+      "line": 22,
+      "tag": "Empirical/Declared",
+      "summary": "- TBD per cabal / wsfull waves and mint kickoffs."
+    },
+    {
+      "anchor": "roadmap--hygiene-tero-facade-evolution",
+      "family": "doc",
+      "kind": "section",
+      "title": "Hygiene, Tero, Facade Evolution",
+      "file": "docs/ROADMAP.md",
+      "line": 28,
+      "tag": "Empirical/Declared",
+      "summary": "- Add scripts/check.sh (fmt --check/fix, clippy -D warnings, doc -D warnings, build, test --all-features) per AGENTS local checks expectation."
+    },
+    {
+      "anchor": "roadmap--w2-facade-evolution-chore-w2-rollout-docs-wiring",
+      "family": "doc",
+      "kind": "section",
+      "title": "W2 Facade Evolution (chore/w2-rollout-docs-wiring)",
+      "file": "docs/ROADMAP.md",
+      "line": 41,
+      "tag": "Empirical/Declared",
+      "summary": "Append-only extension per plan.md w2-rollout (parallel safe to cabal MVP)."
+    },
+    {
+      "anchor": "roadmap--links",
+      "family": "doc",
+      "kind": "section",
+      "title": "Links",
+      "file": "docs/ROADMAP.md",
+      "line": 65,
+      "tag": "Empirical/Declared",
+      "summary": "- AGENTS.md (Tero rule, local checks, PR flow)"
     },
     {
       "anchor": "changelog",
