@@ -238,6 +238,13 @@ impl HolographicStore {
             AgentDomain::Deployment => "deployment",
             AgentDomain::IncidentResponse => "incidentresponse",
             AgentDomain::General => "general",
+            // M1 extensions for tero/context/gate/lang/workspace domains
+            AgentDomain::Workspace => "workspace",
+            AgentDomain::Tero => "tero",
+            AgentDomain::Context => "context",
+            AgentDomain::MemoryGate => "memory_gate",
+            AgentDomain::LangRust => "lang_rust",
+            AgentDomain::LangPython => "lang_python",
         };
         let domain_vec = codebook.get_or_create(domain_str);
 

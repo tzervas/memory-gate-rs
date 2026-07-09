@@ -3,13 +3,13 @@
 > **Honesty:** Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.
 > Use this index to find where to Read, not as authoritative ground truth.
 
-- **Items:** 64
+- **Items:** 68
 - **Flagged:** 0
 - **item_tag:** `Empirical/Declared`
 - **Machine index:** [`index.json`](./index.json)
 - **Manifest:** [`MANIFEST.toml`](./MANIFEST.toml)
 
-## doc (50 entries)
+## doc (52 entries)
 
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
@@ -19,6 +19,7 @@
 | `agents--working-with-cabal-devmelopner-agent-tool` | section | — | Working with cabal-devmelopner agent tool | `AGENTS.md:26` | — | This project is prepared for integration: |
 | `agents--local-checks` | section | — | Local checks | `AGENTS.md:38` | — | Look for: |
 | `agents--further-reading` | section | — | Further reading | `AGENTS.md:46` | — | - README.md |
+| `agents--latest-m1-w2-facade-2026-07-09-pr-26` | section | — | Latest (M1 + W2 Facade, 2026-07-09 PR #26) | `AGENTS.md:56` | — | M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware… |
 | `contributing` | section | — | Contributing to memory-gate-rs | `CONTRIBUTING.md:1` | — | Thank you for your interest in contributing to memory-gate-rs! This document provides |
 | `contributing--code-of-conduct` | section | — | Code of Conduct | `CONTRIBUTING.md:6` | — | This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). |
 | `contributing--getting-started` | section | — | Getting Started | `CONTRIBUTING.md:11` | — | - Rust 1.92 or later (check with rustc --version) |
@@ -51,35 +52,38 @@
 | `readme--core-concepts` | section | — | Core Concepts | `README.md:80` | — | The atomic unit of memory containing learned content: |
 | `readme--learningcontext` | section | — | LearningContext | `README.md:82` | — | The atomic unit of memory containing learned content: |
 | `readme--agent-domains` | section | — | Agent Domains | `README.md:96` | — | Categorize memories by operational domain: |
-| `readme--memory-gateway` | section | — | Memory Gateway | `README.md:110` | — | Central orchestrator for learning and memory operations: |
-| `readme--consolidation` | section | — | Consolidation | `README.md:127` | — | Background process that maintains memory health: |
-| `readme--storage-backends` | section | — | Storage Backends | `README.md:135` | — | Simple HashMap-based storage for testing and development: |
-| `readme--in-memory-default` | section | — | In-Memory (default) | `README.md:137` | — | Simple HashMap-based storage for testing and development: |
-| `readme--qdrant-feature-qdrant` | section | — | Qdrant (feature: `qdrant`) | `README.md:147` | — | Production vector database with semantic search: |
-| `readme--sqlite-vector-feature-sqlite-vec` | section | — | SQLite + Vector (feature: `sqlite-vec`) | `README.md:157` | — | Embedded vector storage with SQLite: |
-| `readme--metrics-feature-metrics` | section | — | Metrics (feature: `metrics`) | `README.md:167` | — | Prometheus-compatible metrics: |
-| `readme--custom-adapters` | section | — | Custom Adapters | `README.md:179` | — | Implement MemoryAdapter for custom knowledge transformation: |
-| `readme--custom-storage-backends` | section | — | Custom Storage Backends | `README.md:204` | — | Implement KnowledgeStore for custom storage: |
-| `readme--integration-with-rust-ai-ecosystem` | section | — | Integration with rust-ai Ecosystem | `README.md:243` | — | memory-gate-rs integrates with the broader rust-ai crate ecosystem: |
-| `readme--license` | section | — | License | `README.md:252` | — | MIT License - see [LICENSE-MIT](LICENSE-MIT) |
-| `readme--contributing` | section | — | Contributing | `README.md:256` | — | Contributions welcome! Please read CONTRIBUTING.md first. |
+| `readme--memory-gateway` | section | — | Memory Gateway | `README.md:122` | — | Central orchestrator for learning and memory operations: |
+| `readme--consolidation` | section | — | Consolidation | `README.md:139` | — | Background process that maintains memory health: |
+| `readme--storage-backends` | section | — | Storage Backends | `README.md:147` | — | Simple HashMap-based storage for testing and development: |
+| `readme--in-memory-default` | section | — | In-Memory (default) | `README.md:149` | — | Simple HashMap-based storage for testing and development: |
+| `readme--qdrant-feature-qdrant` | section | — | Qdrant (feature: `qdrant`) | `README.md:159` | — | Production vector database with semantic search: |
+| `readme--sqlite-vector-feature-sqlite-vec` | section | — | SQLite + Vector (feature: `sqlite-vec`) | `README.md:169` | — | Embedded vector storage with SQLite: |
+| `readme--metrics-feature-metrics` | section | — | Metrics (feature: `metrics`) | `README.md:179` | — | Prometheus-compatible metrics: |
+| `readme--custom-adapters` | section | — | Custom Adapters | `README.md:191` | — | Implement MemoryAdapter for custom knowledge transformation: |
+| `readme--custom-storage-backends` | section | — | Custom Storage Backends | `README.md:216` | — | Implement KnowledgeStore for custom storage: |
+| `readme--integration-with-rust-ai-ecosystem` | section | — | Integration with rust-ai Ecosystem | `README.md:255` | — | memory-gate-rs integrates with the broader rust-ai crate ecosystem: |
+| `readme--m1-domain-facade-design-mint-kickoff` | section | — | M1: Domain + Facade Design (mint kickoff) | `README.md:264` | — | Status: Executed (M1). See types::AgentDomain extensions + tero first queries. |
+| `readme--license` | section | — | License | `README.md:290` | — | MIT License - see [LICENSE-MIT](LICENSE-MIT) |
+| `readme--contributing` | section | — | Contributing | `README.md:294` | — | Contributions welcome! Please read CONTRIBUTING.md first. |
 
-## changelog (14 entries)
+## changelog (16 entries)
 
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
 | `changelog` | entry | — | Changelog | `CHANGELOG.md:1` | — | All notable changes to this project will be documented in this file. |
-| `changelog--1.0.0-2026-01-25` | section | — | [1.0.0] - 2026-01-25 | `CHANGELOG.md:8` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
-| `changelog--added` | section | — | Added | `CHANGELOG.md:10` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
-| `changelog--core-memory-system` | section | — | Core Memory System | `CHANGELOG.md:12` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
-| `changelog--storage-backends` | section | — | Storage Backends | `CHANGELOG.md:19` | — | - InMemoryStore - HashMap-based storage for testing and development (default) |
-| `changelog--trait-system` | section | — | Trait System | `CHANGELOG.md:24` | — | - KnowledgeStore - Core storage interface for any backend |
-| `changelog--vector-symbolic-architecture-vsa` | section | — | Vector Symbolic Architecture (VSA) | `CHANGELOG.md:32` | — | - HolographicVector - High-dimensional vectors for compositional memory |
-| `changelog--adapters` | section | — | Adapters | `CHANGELOG.md:40` | — | - PassthroughAdapter - Identity adapter for direct storage |
-| `changelog--agents` | section | — | Agents | `CHANGELOG.md:43` | — | - BaseMemoryAgent - Foundation for building memory-enabled agents |
-| `changelog--observability-feature-metrics` | section | — | Observability (feature: `metrics`) | `CHANGELOG.md:47` | — | - Prometheus metrics for store operations, consolidation, and retrieval |
-| `changelog--changed` | section | — | Changed | `CHANGELOG.md:51` | — | - MSRV updated to Rust 1.92 |
-| `changelog--experimental` | section | — | Experimental | `CHANGELOG.md:56` | — | - vsa-accel feature for rust-ai ecosystem acceleration (awaiting stable dependencies) |
-| `changelog--0.1.0-2025-01-01` | section | — | [0.1.0] - 2025-01-01 | `CHANGELOG.md:60` | — | - Initial release with basic memory gateway functionality |
-| `changelog--added-2` | section | — | Added | `CHANGELOG.md:62` | — | - Initial release with basic memory gateway functionality |
+| `changelog--unreleased-m1-domain-facade-mint-kickoff` | section | — | [Unreleased] - M1 domain/facade (mint kickoff) | `CHANGELOG.md:8` | — | - Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython. |
+| `changelog--added-m1` | section | — | Added (M1) | `CHANGELOG.md:10` | — | - Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython. |
+| `changelog--1.0.0-2026-01-25` | section | — | [1.0.0] - 2026-01-25 | `CHANGELOG.md:20` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
+| `changelog--added` | section | — | Added | `CHANGELOG.md:22` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
+| `changelog--core-memory-system` | section | — | Core Memory System | `CHANGELOG.md:24` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
+| `changelog--storage-backends` | section | — | Storage Backends | `CHANGELOG.md:31` | — | - InMemoryStore - HashMap-based storage for testing and development (default) |
+| `changelog--trait-system` | section | — | Trait System | `CHANGELOG.md:36` | — | - KnowledgeStore - Core storage interface for any backend |
+| `changelog--vector-symbolic-architecture-vsa` | section | — | Vector Symbolic Architecture (VSA) | `CHANGELOG.md:44` | — | - HolographicVector - High-dimensional vectors for compositional memory |
+| `changelog--adapters` | section | — | Adapters | `CHANGELOG.md:52` | — | - PassthroughAdapter - Identity adapter for direct storage |
+| `changelog--agents` | section | — | Agents | `CHANGELOG.md:55` | — | - BaseMemoryAgent - Foundation for building memory-enabled agents |
+| `changelog--observability-feature-metrics` | section | — | Observability (feature: `metrics`) | `CHANGELOG.md:59` | — | - Prometheus metrics for store operations, consolidation, and retrieval |
+| `changelog--changed` | section | — | Changed | `CHANGELOG.md:63` | — | - MSRV updated to Rust 1.92 |
+| `changelog--experimental` | section | — | Experimental | `CHANGELOG.md:68` | — | - vsa-accel feature for rust-ai ecosystem acceleration (awaiting stable dependencies) |
+| `changelog--0.1.0-2025-01-01` | section | — | [0.1.0] - 2025-01-01 | `CHANGELOG.md:72` | — | - Initial release with basic memory gateway functionality |
+| `changelog--added-2` | section | — | Added | `CHANGELOG.md:74` | — | - Initial release with basic memory gateway functionality |
 
