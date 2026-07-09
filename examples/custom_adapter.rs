@@ -1,6 +1,6 @@
 //! Custom adapter example showing how to create domain-specific memory processing
 //!
-//! Run with: cargo run --example custom_adapter
+//! Run with: cargo run --example `custom_adapter`
 
 use async_trait::async_trait;
 use memory_gate_rs::{
@@ -49,7 +49,7 @@ impl MemoryAdapter<LearningContext> for SecurityAwareAdapter {
     ) -> Result<LearningContext> {
         // Apply feedback if provided
         if let Some(f) = feedback {
-            context.importance = (context.importance + f.clamp(0.0, 1.0)) / 2.0;
+            context.importance = f32::midpoint(context.importance, f.clamp(0.0, 1.0));
         }
 
         // Boost security-related content
@@ -95,7 +95,7 @@ async fn main() -> Result<()> {
     ];
 
     for (content, importance) in interactions {
-        println!("Processing: {}", content);
+        println!("Processing: {content}");
         let ctx =
             LearningContext::new(content, AgentDomain::Infrastructure).with_importance(importance);
         gateway.learn_from_interaction(ctx, None).await?;
@@ -111,8 +111,7 @@ async fn main() -> Result<()> {
             .metadata
             .as_ref()
             .and_then(|m| m.get("security_flagged"))
-            .map(|_| "🔒")
-            .unwrap_or("  ");
+            .map_or("  ", |_| "🔒");
         println!(
             "{} {}. [importance: {:.2}] {}",
             security_flag,

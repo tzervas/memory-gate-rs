@@ -42,6 +42,7 @@ Look for:
 - Cargo.toml / pyproject.toml + standard commands (cargo test, uv run pytest, ruff, etc.)
 
 Run checks before considering work complete.
+- Use `./scripts/check.sh` (or `--fix`); enforces fmt --check/fix, clippy -D warnings, doc, build, test --all-features.
 
 ## Further reading
 
@@ -64,4 +65,17 @@ Update docs + tero in PR process per task. Compact state captured.
 - Tero cites + append-only followed. Mirror: M1 AgentDomain/facade parallels cabal CommonMemory W2 facade (domain scoping key).
 - Refs: dev-docs/waves/wsfull-wave-2026-07-09-compact.md (wsfull state, C0/M1/W2/local-ollama), WORKSPACE_CABAL_TERO_READINESS.md (leaf orch tranche, parameterization W2), cabal-devmelopner PRs + kickoffs.
 - Next: use /root/git/scripts/update-tero.sh ; branch-guard for any further (chore/feature -> dev PRs only).
+
+## W2 Facade Evolution + CommonMemory Mirror Stub (chore/w2-rollout-docs-wiring)
+
+Per plan.md w2-rollout + dev-docs/schemas/ (read: W2-STRUCTURED-SCHEMAS.md, common_memory_facade.rs.example, cabal schemas/agent current impl, memory types.rs M1 domains).
+
+- Extended ROADMAP with facade evolution notes + simple CommonMemory stub (Rust trait mirroring cabal's CommonMemoryAdapter + protocol).
+- Stub fits as doc/example (no new src/ yet; thin per M1); will evolve for direct facade use alongside current domain filters.
+- Cabal cross: Py AgentDomain mirror + facade.query(AgentDomain.*) -> StructuredResponse (always; refusal on err). See cabal-devmelopner/src/.../schemas.py:369 , agent.py:79 (TERO domain).
+- Dev-mcp + context updated for cross-repo (cabal+memory) + session consumer.
+- Tero-first: ran on "w2|facade|Structured|CommonMemory" (pre: refusal as expected); cites to plan/wsfull.
+- Append-only; hygiene (check.sh); update-tero; land --no-ff dev/main + propagate.
+
+Refs: plan.md:44, wsfull-wave-2026-07-09-compact.md:30, dev-docs/schemas/* .
 

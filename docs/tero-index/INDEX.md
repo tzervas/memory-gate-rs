@@ -3,13 +3,13 @@
 > **Honesty:** Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.
 > Use this index to find where to Read, not as authoritative ground truth.
 
-- **Items:** 69
+- **Items:** 77
 - **Flagged:** 0
 - **item_tag:** `Empirical/Declared`
 - **Machine index:** [`index.json`](./index.json)
 - **Manifest:** [`MANIFEST.toml`](./MANIFEST.toml)
 
-## doc (53 entries)
+## doc (61 entries)
 
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
@@ -18,9 +18,10 @@
 | `agents--agent-with-context` | other | — | agent with context: | `AGENTS.md:20` | — | uv run --project ../cabal-devmelopner cabal-devmelopner "task description here" --use-tero |
 | `agents--working-with-cabal-devmelopner-agent-tool` | section | — | Working with cabal-devmelopner agent tool | `AGENTS.md:26` | — | This project is prepared for integration: |
 | `agents--local-checks` | section | — | Local checks | `AGENTS.md:38` | — | Look for: |
-| `agents--further-reading` | section | — | Further reading | `AGENTS.md:46` | — | - README.md |
-| `agents--latest-m1-w2-facade-2026-07-09-pr-26` | section | — | Latest (M1 + W2 Facade, 2026-07-09 PR #26) | `AGENTS.md:56` | — | M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware… |
-| `agents--post-26-merge-propagate-2026-07-09` | section | — | Post #26 merge + propagate (2026-07-09) | `AGENTS.md:61` | — | - Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted. |
+| `agents--further-reading` | section | — | Further reading | `AGENTS.md:47` | — | - README.md |
+| `agents--latest-m1-w2-facade-2026-07-09-pr-26` | section | — | Latest (M1 + W2 Facade, 2026-07-09 PR #26) | `AGENTS.md:57` | — | M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware… |
+| `agents--post-26-merge-propagate-2026-07-09` | section | — | Post #26 merge + propagate (2026-07-09) | `AGENTS.md:62` | — | - Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted. |
+| `agents--w2-facade-evolution-commonmemory-mirror-stub-chore-w2-rollout-docs-wiring` | section | — | W2 Facade Evolution + CommonMemory Mirror Stub (chore/w2-rollout-docs-wiring) | `AGENTS.md:69` | — | Per plan.md w2-rollout + dev-docs/schemas/ (read: W2-STRUCTURED-SCHEMAS.md, commonmemoryfacade.rs.example, cabal schemas/agent current impl, memory types.rs M1… |
 | `contributing` | section | — | Contributing to memory-gate-rs | `CONTRIBUTING.md:1` | — | Thank you for your interest in contributing to memory-gate-rs! This document provides |
 | `contributing--code-of-conduct` | section | — | Code of Conduct | `CONTRIBUTING.md:6` | — | This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). |
 | `contributing--getting-started` | section | — | Getting Started | `CONTRIBUTING.md:11` | — | - Rust 1.92 or later (check with rustc --version) |
@@ -39,11 +40,11 @@
 | `contributing--testing` | section | — | Testing | `CONTRIBUTING.md:104` | — | - Write unit tests for all new functionality |
 | `contributing--commit-messages` | section | — | Commit Messages | `CONTRIBUTING.md:111` | — | Use conventional commit format: |
 | `contributing--pull-requests` | section | — | Pull Requests | `CONTRIBUTING.md:130` | — | 1. Fork the repository |
-| `contributing--feature-development` | section | — | Feature Development | `CONTRIBUTING.md:142` | — | 1. Create a new module in src/storage/ |
-| `contributing--adding-a-new-storage-backend` | section | — | Adding a New Storage Backend | `CONTRIBUTING.md:144` | — | 1. Create a new module in src/storage/ |
-| `contributing--adding-a-new-adapter` | section | — | Adding a New Adapter | `CONTRIBUTING.md:154` | — | 1. Create a new module in src/adapters/ |
-| `contributing--questions` | section | — | Questions? | `CONTRIBUTING.md:161` | — | - Open an issue for bugs or feature requests |
-| `contributing--license` | section | — | License | `CONTRIBUTING.md:167` | — | By contributing, you agree that your contributions will be licensed under the MIT License. |
+| `contributing--feature-development` | section | — | Feature Development | `CONTRIBUTING.md:143` | — | 1. Create a new module in src/storage/ |
+| `contributing--adding-a-new-storage-backend` | section | — | Adding a New Storage Backend | `CONTRIBUTING.md:145` | — | 1. Create a new module in src/storage/ |
+| `contributing--adding-a-new-adapter` | section | — | Adding a New Adapter | `CONTRIBUTING.md:155` | — | 1. Create a new module in src/adapters/ |
+| `contributing--questions` | section | — | Questions? | `CONTRIBUTING.md:162` | — | - Open an issue for bugs or feature requests |
+| `contributing--license` | section | — | License | `CONTRIBUTING.md:168` | — | By contributing, you agree that your contributions will be licensed under the MIT License. |
 | `readme` | other | — | memory-gate-rs | `README.md:1` | — | [![Crates.io](https://img.shields.io/crates/v/memory-gate-rs.svg)](https://crates.io/crates/memory-gate-rs) |
 | `readme--overview` | section | — | Overview | `README.md:9` | — | Memory-gate provides a production-ready memory layer for AI agents, solving the fundamental problem of stateless AI by enabling: |
 | `readme--architecture-complementary-learning-systems-cls` | section | — | Architecture: Complementary Learning Systems (CLS) | `README.md:18` | — | Inspired by neuroscience research on brain plasticity, memory-gate implements a dual-stream architecture: |
@@ -66,6 +67,13 @@
 | `readme--m1-domain-facade-design-mint-kickoff` | section | — | M1: Domain + Facade Design (mint kickoff) | `README.md:264` | — | Status: Executed (M1). See types::AgentDomain extensions + tero first queries. |
 | `readme--license` | section | — | License | `README.md:291` | — | MIT License - see [LICENSE-MIT](LICENSE-MIT) |
 | `readme--contributing` | section | — | Contributing | `README.md:295` | — | Contributions welcome! Please read CONTRIBUTING.md first. |
+| `roadmap` | note | — | memory-gate-rs — Product Roadmap | `docs/ROADMAP.md:1` | Living (2026-07-09) | Status: Living (2026-07-09) |
+| `roadmap--phases` | section | — | Phases | `docs/ROADMAP.md:10` | — | - Extended AgentDomain (Workspace, Tero, Context, MemoryGate, LangRust, LangPython) + prefix-aware FromStr ("layer:tero", "lang:rust", "repo:xxx"). |
+| `roadmap--m1-domain-facade-design-done-2026-07-09-pr-26` | section | — | M1 — Domain + Facade Design (done, 2026-07-09 PR #26) | `docs/ROADMAP.md:12` | — | - Extended AgentDomain (Workspace, Tero, Context, MemoryGate, LangRust, LangPython) + prefix-aware FromStr ("layer:tero", "lang:rust", "repo:xxx"). |
+| `roadmap--m2-pending` | section | — | M2 — (pending) | `docs/ROADMAP.md:22` | — | - TBD per cabal / wsfull waves and mint kickoffs. |
+| `roadmap--hygiene-tero-facade-evolution` | section | — | Hygiene, Tero, Facade Evolution | `docs/ROADMAP.md:28` | — | - Add scripts/check.sh (fmt --check/fix, clippy -D warnings, doc -D warnings, build, test --all-features) per AGENTS local checks expectation. |
+| `roadmap--w2-facade-evolution-chore-w2-rollout-docs-wiring` | section | — | W2 Facade Evolution (chore/w2-rollout-docs-wiring) | `docs/ROADMAP.md:41` | — | Append-only extension per plan.md w2-rollout (parallel safe to cabal MVP). |
+| `roadmap--links` | section | — | Links | `docs/ROADMAP.md:65` | — | - AGENTS.md (Tero rule, local checks, PR flow) |
 
 ## changelog (16 entries)
 

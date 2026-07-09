@@ -1,10 +1,11 @@
 //! Benchmarks for storage operations.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use memory_gate_rs::{
     adapters::PassthroughAdapter, storage::InMemoryStore, AgentDomain, GatewayConfig,
     KnowledgeStore, LearningContext, MemoryGateway,
 };
+use std::hint::black_box;
 use tokio::runtime::Runtime;
 
 fn create_gateway() -> MemoryGateway<PassthroughAdapter, InMemoryStore> {
@@ -37,7 +38,7 @@ fn bench_retrieve_operation(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("retrieve_context");
 
-    for store_size in [10, 100, 1000].iter() {
+    for store_size in &[10, 100, 1000] {
         group.bench_with_input(
             BenchmarkId::from_parameter(store_size),
             store_size,
