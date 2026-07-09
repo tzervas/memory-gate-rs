@@ -122,5 +122,30 @@ async fn main() -> Result<()> {
     }
 
     println!("\n=== Example Complete ===");
+
+    // M1 facade demo (domain-scoped ingest from tero/context for unified queries)
+    // Tero-first (cite via scripts/tero.sh or MCP), then:
+    println!("\n--- M1 Facade scoping demo ---");
+    let tero_ctx = LearningContext::new(
+        "Tero L1: use AgentDomain::Tero for cited corpus results (see mint M1)",
+        AgentDomain::Tero,
+    );
+    gateway.learn_from_interaction(tero_ctx, Some(0.95)).await?;
+    let lang_ctx = LearningContext::new(
+        "Python 3.14 contextlib: closing() context manager (lang dual index)",
+        AgentDomain::LangPython,
+    );
+    gateway.learn_from_interaction(lang_ctx, None).await?;
+
+    let tero_hits = gateway
+        .retrieve_context("Tero L1", Some(2), Some(AgentDomain::Tero))
+        .await?;
+    println!("Tero domain hits: {}", tero_hits.len());
+
+    let py_hits = gateway
+        .retrieve_context("contextlib", Some(2), Some(AgentDomain::LangPython))
+        .await?;
+    println!("LangPython domain hits: {}", py_hits.len());
+    // Facade: callers (cabal/herr) use domain to merge tero(cited) + gate(persisted) + context(session) w/o bloat.
     Ok(())
 }

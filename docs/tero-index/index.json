@@ -388,7 +388,7 @@
       "kind": "section",
       "title": "Memory Gateway",
       "file": "README.md",
-      "line": 110,
+      "line": 122,
       "tag": "Empirical/Declared",
       "summary": "Central orchestrator for learning and memory operations:"
     },
@@ -398,7 +398,7 @@
       "kind": "section",
       "title": "Consolidation",
       "file": "README.md",
-      "line": 127,
+      "line": 139,
       "tag": "Empirical/Declared",
       "summary": "Background process that maintains memory health:"
     },
@@ -408,7 +408,7 @@
       "kind": "section",
       "title": "Storage Backends",
       "file": "README.md",
-      "line": 135,
+      "line": 147,
       "tag": "Empirical/Declared",
       "summary": "Simple HashMap-based storage for testing and development:"
     },
@@ -418,7 +418,7 @@
       "kind": "section",
       "title": "In-Memory (default)",
       "file": "README.md",
-      "line": 137,
+      "line": 149,
       "tag": "Empirical/Declared",
       "summary": "Simple HashMap-based storage for testing and development:"
     },
@@ -428,7 +428,7 @@
       "kind": "section",
       "title": "Qdrant (feature: `qdrant`)",
       "file": "README.md",
-      "line": 147,
+      "line": 159,
       "tag": "Empirical/Declared",
       "summary": "Production vector database with semantic search:"
     },
@@ -438,7 +438,7 @@
       "kind": "section",
       "title": "SQLite + Vector (feature: `sqlite-vec`)",
       "file": "README.md",
-      "line": 157,
+      "line": 169,
       "tag": "Empirical/Declared",
       "summary": "Embedded vector storage with SQLite:"
     },
@@ -448,7 +448,7 @@
       "kind": "section",
       "title": "Metrics (feature: `metrics`)",
       "file": "README.md",
-      "line": 167,
+      "line": 179,
       "tag": "Empirical/Declared",
       "summary": "Prometheus-compatible metrics:"
     },
@@ -458,7 +458,7 @@
       "kind": "section",
       "title": "Custom Adapters",
       "file": "README.md",
-      "line": 179,
+      "line": 191,
       "tag": "Empirical/Declared",
       "summary": "Implement MemoryAdapter for custom knowledge transformation:"
     },
@@ -468,7 +468,7 @@
       "kind": "section",
       "title": "Custom Storage Backends",
       "file": "README.md",
-      "line": 204,
+      "line": 216,
       "tag": "Empirical/Declared",
       "summary": "Implement KnowledgeStore for custom storage:"
     },
@@ -478,9 +478,19 @@
       "kind": "section",
       "title": "Integration with rust-ai Ecosystem",
       "file": "README.md",
-      "line": 243,
+      "line": 255,
       "tag": "Empirical/Declared",
       "summary": "memory-gate-rs integrates with the broader rust-ai crate ecosystem:"
+    },
+    {
+      "anchor": "readme--m1-domain-facade-design-mint-kickoff",
+      "family": "doc",
+      "kind": "section",
+      "title": "M1: Domain + Facade Design (mint kickoff)",
+      "file": "README.md",
+      "line": 264,
+      "tag": "Empirical/Declared",
+      "summary": "Status: Executed (M1). See types::AgentDomain extensions + tero first queries."
     },
     {
       "anchor": "readme--license",
@@ -488,7 +498,7 @@
       "kind": "section",
       "title": "License",
       "file": "README.md",
-      "line": 252,
+      "line": 290,
       "tag": "Empirical/Declared",
       "summary": "MIT License - see [LICENSE-MIT](LICENSE-MIT)"
     },
@@ -498,7 +508,7 @@
       "kind": "section",
       "title": "Contributing",
       "file": "README.md",
-      "line": 256,
+      "line": 294,
       "tag": "Empirical/Declared",
       "summary": "Contributions welcome! Please read CONTRIBUTING.md first."
     },
@@ -513,12 +523,32 @@
       "summary": "All notable changes to this project will be documented in this file."
     },
     {
+      "anchor": "changelog--unreleased-m1-domain-facade-mint-kickoff",
+      "family": "changelog",
+      "kind": "section",
+      "title": "[Unreleased] - M1 domain/facade (mint kickoff)",
+      "file": "CHANGELOG.md",
+      "line": 8,
+      "tag": "Empirical/Declared",
+      "summary": "- Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython."
+    },
+    {
+      "anchor": "changelog--added-m1",
+      "family": "changelog",
+      "kind": "section",
+      "title": "Added (M1)",
+      "file": "CHANGELOG.md",
+      "line": 10,
+      "tag": "Empirical/Declared",
+      "summary": "- Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython."
+    },
+    {
       "anchor": "changelog--1.0.0-2026-01-25",
       "family": "changelog",
       "kind": "section",
       "title": "[1.0.0] - 2026-01-25",
       "file": "CHANGELOG.md",
-      "line": 8,
+      "line": 20,
       "tag": "Empirical/Declared",
       "summary": "- MemoryGateway - Central orchestrator for learning and retrieval operations"
     },
@@ -528,7 +558,7 @@
       "kind": "section",
       "title": "Added",
       "file": "CHANGELOG.md",
-      "line": 10,
+      "line": 22,
       "tag": "Empirical/Declared",
       "summary": "- MemoryGateway - Central orchestrator for learning and retrieval operations"
     },
@@ -538,7 +568,7 @@
       "kind": "section",
       "title": "Core Memory System",
       "file": "CHANGELOG.md",
-      "line": 12,
+      "line": 24,
       "tag": "Empirical/Declared",
       "summary": "- MemoryGateway - Central orchestrator for learning and retrieval operations"
     },
@@ -548,7 +578,7 @@
       "kind": "section",
       "title": "Storage Backends",
       "file": "CHANGELOG.md",
-      "line": 19,
+      "line": 31,
       "tag": "Empirical/Declared",
       "summary": "- InMemoryStore - HashMap-based storage for testing and development (default)"
     },
@@ -558,7 +588,7 @@
       "kind": "section",
       "title": "Trait System",
       "file": "CHANGELOG.md",
-      "line": 24,
+      "line": 36,
       "tag": "Empirical/Declared",
       "summary": "- KnowledgeStore - Core storage interface for any backend"
     },
@@ -568,7 +598,7 @@
       "kind": "section",
       "title": "Vector Symbolic Architecture (VSA)",
       "file": "CHANGELOG.md",
-      "line": 32,
+      "line": 44,
       "tag": "Empirical/Declared",
       "summary": "- HolographicVector - High-dimensional vectors for compositional memory"
     },
@@ -578,7 +608,7 @@
       "kind": "section",
       "title": "Adapters",
       "file": "CHANGELOG.md",
-      "line": 40,
+      "line": 52,
       "tag": "Empirical/Declared",
       "summary": "- PassthroughAdapter - Identity adapter for direct storage"
     },
@@ -588,7 +618,7 @@
       "kind": "section",
       "title": "Agents",
       "file": "CHANGELOG.md",
-      "line": 43,
+      "line": 55,
       "tag": "Empirical/Declared",
       "summary": "- BaseMemoryAgent - Foundation for building memory-enabled agents"
     },
@@ -598,7 +628,7 @@
       "kind": "section",
       "title": "Observability (feature: `metrics`)",
       "file": "CHANGELOG.md",
-      "line": 47,
+      "line": 59,
       "tag": "Empirical/Declared",
       "summary": "- Prometheus metrics for store operations, consolidation, and retrieval"
     },
@@ -608,7 +638,7 @@
       "kind": "section",
       "title": "Changed",
       "file": "CHANGELOG.md",
-      "line": 51,
+      "line": 63,
       "tag": "Empirical/Declared",
       "summary": "- MSRV updated to Rust 1.92"
     },
@@ -618,7 +648,7 @@
       "kind": "section",
       "title": "Experimental",
       "file": "CHANGELOG.md",
-      "line": 56,
+      "line": 68,
       "tag": "Empirical/Declared",
       "summary": "- vsa-accel feature for rust-ai ecosystem acceleration (awaiting stable dependencies)"
     },
@@ -628,7 +658,7 @@
       "kind": "section",
       "title": "[0.1.0] - 2025-01-01",
       "file": "CHANGELOG.md",
-      "line": 60,
+      "line": 72,
       "tag": "Empirical/Declared",
       "summary": "- Initial release with basic memory gateway functionality"
     },
@@ -638,7 +668,7 @@
       "kind": "section",
       "title": "Added",
       "file": "CHANGELOG.md",
-      "line": 62,
+      "line": 74,
       "tag": "Empirical/Declared",
       "summary": "- Initial release with basic memory gateway functionality"
     }

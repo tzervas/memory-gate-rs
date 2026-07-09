@@ -104,7 +104,19 @@ pub enum AgentDomain {
     Deployment,        // CI/CD and release management
     IncidentResponse,  // Incident handling
     General,           // Uncategorized
+    // M1 extensions (see mint kickoff):
+    Workspace,         // cross-repo / wsfull orch scoping
+    Tero,              // tero L1 cited structured (corpus + lang docs)
+    Context,           // context-mcp session/RAG
+    MemoryGate,        // this layer's gating
+    LangRust,          // lang:rust (1.96 dual-index)
+    LangPython,        // lang:python (3.13/3.14 dual-index)
 }
+```
+
+**M1 domain design (tero-cited: `readme--agent-domains` at README.md:96)**: domains now support repo/layer/lang scoping for integration of tero L1 + context-mcp + memory-gate. Prefixes like "layer:tero", "lang:rust", "repo:xxx" parse to appropriate domain for unified facade filtering. Use `AgentDomain::all()`, `parse()`, `as_str()`.
+
+Domain filtering in `retrieve_context(..., Some(AgentDomain::Tero))` enables scoped memory without bloat (core to mint vision).
 ```
 
 ### Memory Gateway
@@ -248,6 +260,32 @@ memory-gate-rs integrates with the broader rust-ai crate ecosystem:
 - **agent-mcp**: Multi-agent orchestration can use memory-gate for persistence
 - **context-mcp**: Alternate MCP-based context storage
 - **embeddenator-retrieval**: Future VSA-based similarity search integration
+
+## M1: Domain + Facade Design (mint kickoff)
+
+**Status**: Executed (M1). See types::AgentDomain extensions + tero first queries.
+
+**Domains**: Extended for vision — repo (Workspace), layer (Tero | Context | MemoryGate), lang (LangRust | LangPython). Supports prefixed strings for cross-layer queries e.g. "layer:tero", "lang:python".
+
+**Facade (thin adapter / MCP glue)**: 
+- Use domain filters on existing `MemoryGateway::retrieve_context(query, limit, Some(AgentDomain::Tero))` (or Context/LangRust) to scope.
+- Tero results (via tero MCP ./scripts/tero.sh or tero__*) are cited, then can be `learn_from_interaction` with domain=Tero (or Lang*).
+- Context-mcp items similarly ingested with domain=Context.
+- No duplication: tero for citations+structure, gate for persistent scoped learned, context for session.
+- Shared schemas (StructuredResponse with answer+citations) escalated to wsfull orch; here the domain acts as the scoping key.
+- Example unified:
+
+```rust
+// tero-first (cited), then gate with domain
+let memories = gateway.retrieve_context("async fn", 5, Some(AgentDomain::Tero)).await?;
+// or lang
+let py_mem = gateway.retrieve_context("contextlib", 3, Some(AgentDomain::LangPython)).await?;
+```
+
+Update AGENTS/CHANGELOG per dev-workflow. Lang docs dual-index later (M3). Escalate adapters/prompts/schemas.
+
+Citations: tero memory-gate-rs `readme--agent-domains`, kickoffs/mint.md (M1 table).
+```
 
 ## License
 

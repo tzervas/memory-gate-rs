@@ -158,6 +158,10 @@ fn truncate_content(s: &str, max_len: usize) -> String {
 ///
 /// Domains allow filtering memories by the type of operation they relate to,
 /// enabling domain-specific memory retrieval.
+///
+/// Per mint kickoff (M1): extended for workspace multi-layer memory integration:
+/// repo scoping, layers (tero/context/gate), lang docs (rust/python). See README.
+/// Tero-cited: readme--agent-domains .
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum AgentDomain {
@@ -176,6 +180,25 @@ pub enum AgentDomain {
     /// Uncategorized or general-purpose.
     #[default]
     General,
+
+    // --- M1 extensions for tero L1 + context-mcp + memory-gate integration (mint vision) ---
+    /// Workspace-level orchestration / cross-repo coordination (e.g. wsfull orch).
+    Workspace,
+
+    /// Tero L1 structured cited index (deterministic corpus + lang docs dual-index).
+    Tero,
+
+    /// Context-mcp layer (session memory, temporal, future RAG over lang/workspace).
+    Context,
+
+    /// Memory-gate-rs itself (gating, consolidation, domain scoping facade).
+    MemoryGate,
+
+    /// Language reference docs: Rust (1.96 book/ref/std + tero-indexed).
+    LangRust,
+
+    /// Language reference docs: Python (3.13/3.14 stdlib/tutorial + dual index).
+    LangPython,
 }
 
 impl AgentDomain {
@@ -188,6 +211,13 @@ impl AgentDomain {
             Self::Deployment,
             Self::IncidentResponse,
             Self::General,
+            // M1 extensions (tero/context/gate/lang + workspace scoping)
+            Self::Workspace,
+            Self::Tero,
+            Self::Context,
+            Self::MemoryGate,
+            Self::LangRust,
+            Self::LangPython,
         ]
     }
 
@@ -200,6 +230,13 @@ impl AgentDomain {
             Self::Deployment => "deployment",
             Self::IncidentResponse => "incident_response",
             Self::General => "general",
+            // M1
+            Self::Workspace => "workspace",
+            Self::Tero => "tero",
+            Self::Context => "context",
+            Self::MemoryGate => "memory_gate",
+            Self::LangRust => "lang_rust",
+            Self::LangPython => "lang_python",
         }
     }
 }
@@ -214,13 +251,41 @@ impl std::str::FromStr for AgentDomain {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
+        let s = s.to_lowercase();
+        match s.as_str() {
             "infrastructure" => Ok(Self::Infrastructure),
             "code_review" | "codereview" => Ok(Self::CodeReview),
             "deployment" => Ok(Self::Deployment),
             "incident_response" | "incidentresponse" => Ok(Self::IncidentResponse),
             "general" => Ok(Self::General),
-            _ => Err(format!("unknown domain: {s}")),
+            // M1 mint extensions + layer/repo/lang: prefix support for facade scoping
+            "workspace" | "repo" => Ok(Self::Workspace),
+            "tero" | "layer:tero" | "l1" => Ok(Self::Tero),
+            "context" | "layer:context" | "context-mcp" | "rag" => Ok(Self::Context),
+            "memory_gate" | "memory-gate" | "gate" | "layer:gate" => Ok(Self::MemoryGate),
+            "lang_rust" | "lang:rust" | "rust" | "rust-1.96" => Ok(Self::LangRust),
+            "lang_python" | "lang:python" | "python" | "python-3.13" | "python-3.14" => Ok(Self::LangPython),
+            _ => {
+                // Support "layer:xxx", "repo:xxx", "lang:xxx" prefixes for unified facade (M1)
+                if let Some(rest) = s.strip_prefix("layer:") {
+                    return Self::from_str(rest);
+                }
+                if let Some(_rest) = s.strip_prefix("repo:") {
+                    // map generic repo to Workspace for scoping; specific use metadata or exact
+                    return Ok(Self::Workspace);
+                }
+                if let Some(rest) = s.strip_prefix("lang:") {
+                    let norm = rest.replace(['-', '.'], "_");
+                    if norm.starts_with("rust") || norm == "rust" {
+                        return Ok(Self::LangRust);
+                    }
+                    if norm.starts_with("python") || norm == "py" {
+                        return Ok(Self::LangPython);
+                    }
+                    return Self::from_str(&format!("lang_{}", norm));
+                }
+                Err(format!("unknown domain: {s}"))
+            }
         }
     }
 }
@@ -385,6 +450,19 @@ mod tests {
         assert_eq!("code_review".parse::<AgentDomain>().unwrap(), AgentDomain::CodeReview);
         assert_eq!("CodeReview".parse::<AgentDomain>().unwrap(), AgentDomain::CodeReview);
         assert!("unknown".parse::<AgentDomain>().is_err());
+
+        // M1 tests (tests-first for domain design)
+        assert_eq!("tero".parse::<AgentDomain>().unwrap(), AgentDomain::Tero);
+        assert_eq!("layer:tero".parse::<AgentDomain>().unwrap(), AgentDomain::Tero);
+        assert_eq!("context".parse::<AgentDomain>().unwrap(), AgentDomain::Context);
+        assert_eq!("layer:context-mcp".parse::<AgentDomain>().unwrap(), AgentDomain::Context);
+        assert_eq!("gate".parse::<AgentDomain>().unwrap(), AgentDomain::MemoryGate);
+        assert_eq!("lang:rust".parse::<AgentDomain>().unwrap(), AgentDomain::LangRust);
+        assert_eq!("lang:python-3.14".parse::<AgentDomain>().unwrap(), AgentDomain::LangPython);
+        assert_eq!("workspace".parse::<AgentDomain>().unwrap(), AgentDomain::Workspace);
+        assert_eq!("repo:memory-gate-rs".parse::<AgentDomain>().unwrap(), AgentDomain::Workspace);
+        assert_eq!(AgentDomain::LangRust.as_str(), "lang_rust");
+        assert!(AgentDomain::all().iter().any(|d| *d == AgentDomain::Tero));
     }
 
     #[test]
