@@ -230,7 +230,7 @@ impl SqliteVecStore {
 
     /// Generate embedding for text content.
     async fn embed(&self, text: &str) -> Result<Vec<f32>> {
-        let embedder = self.embedder.lock().await;
+        let mut embedder = self.embedder.lock().await;
         let embeddings = embedder
             .embed(vec![text], None)
             .map_err(|e| StorageError::backend(format!("Failed to generate embedding: {e}")))?;
@@ -248,7 +248,9 @@ impl SqliteVecStore {
 
     /// Convert blob back to embedding vector.
     fn blob_to_embedding(blob: &[u8]) -> Vec<f32> {
-        blob.chunks_exact(4)
+        blob.as_chunks::<4>()
+            .0
+            .iter()
             .map(|chunk| f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
             .collect()
     }
@@ -831,8 +833,8 @@ mod tests {
     fn test_vector_store_trait() {
         // Verify the embedding dimension is correct
         // This is a compile-time check that SqliteVecStore implements VectorStore
-        fn _assert_vector_store<T: VectorStore<LearningContext>>() {}
-        _assert_vector_store::<SqliteVecStore>();
+        fn assert_vector_store<T: VectorStore<LearningContext>>() {}
+        assert_vector_store::<SqliteVecStore>();
     }
 
     #[tokio::test]

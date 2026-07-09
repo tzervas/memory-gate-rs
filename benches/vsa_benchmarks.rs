@@ -1,12 +1,13 @@
 //! VSA/HDC operation benchmarks.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use memory_gate_rs::vsa::{BindingMode, BundlingMode, HolographicVector, VsaCodebook};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use memory_gate_rs::vsa::{HolographicVector, VsaCodebook};
+use std::hint::black_box;
 
 fn bench_vector_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("vsa_vector_creation");
 
-    for dim in [1000, 4096, 10000].iter() {
+    for dim in &[1000, 4096, 10000] {
         group.bench_with_input(BenchmarkId::new("random", dim), dim, |b, &dim| {
             b.iter(|| HolographicVector::random_bipolar(black_box(dim)));
         });
@@ -18,7 +19,7 @@ fn bench_vector_creation(c: &mut Criterion) {
 fn bench_bind_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("vsa_bind");
 
-    for dim in [1000, 4096, 10000].iter() {
+    for dim in &[1000, 4096, 10000] {
         let v1 = HolographicVector::random_bipolar(*dim);
         let v2 = HolographicVector::random_bipolar(*dim);
 
@@ -38,14 +39,14 @@ fn bench_bind_operations(c: &mut Criterion) {
 fn bench_bundle_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("vsa_bundle");
 
-    for dim in [1000, 4096, 10000].iter() {
+    for dim in &[1000, 4096, 10000] {
         let vectors: Vec<_> = (0..10)
             .map(|_| HolographicVector::random_bipolar(*dim))
             .collect();
 
         group.bench_with_input(BenchmarkId::new("bundle_10", dim), dim, |b, _| {
             b.iter(|| {
-                let owned: Vec<HolographicVector> = vectors.iter().cloned().collect();
+                let owned: Vec<HolographicVector> = vectors.clone();
                 HolographicVector::bundle_all(black_box(&owned))
             });
         });
@@ -57,7 +58,7 @@ fn bench_bundle_operations(c: &mut Criterion) {
 fn bench_similarity(c: &mut Criterion) {
     let mut group = c.benchmark_group("vsa_similarity");
 
-    for dim in [1000, 4096, 10000].iter() {
+    for dim in &[1000, 4096, 10000] {
         let v1 = HolographicVector::random_bipolar(*dim);
         let v2 = HolographicVector::random_bipolar(*dim);
 
@@ -75,7 +76,7 @@ fn bench_codebook_lookup(c: &mut Criterion) {
     // Pre-populate codebook with symbols
     let mut codebook = VsaCodebook::new(10000);
     for i in 0..1000 {
-        let _ = codebook.get_or_create(&format!("symbol_{}", i));
+        let _ = codebook.get_or_create(&format!("symbol_{i}"));
     }
 
     group.bench_function("get_existing", |b| {

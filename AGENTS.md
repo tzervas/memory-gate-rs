@@ -42,6 +42,7 @@ Look for:
 - Cargo.toml / pyproject.toml + standard commands (cargo test, uv run pytest, ruff, etc.)
 
 Run checks before considering work complete.
+- Use `./scripts/check.sh` (or `--fix`); enforces fmt --check/fix, clippy -D warnings, doc, build, test --all-features.
 
 ## Further reading
 
