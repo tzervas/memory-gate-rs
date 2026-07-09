@@ -3,6 +3,8 @@
 
 **Use Tero + cabal-devmelopner for work here.**
 
+**Kickoff framework**: root `.claude/kickoffs/mint.md` for integration. Local .claude/kickoffs/.
+
 ## Tero (Layer-1 corpus index)
 
 Repo has `docs/tero-index/index.json` (generated/ refreshed via tero-mcp/scripts/generate_lite_index.py).

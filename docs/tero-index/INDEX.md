@@ -14,11 +14,11 @@
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
 | `agents` | other | — | AGENTS.md — memory-gate-rs | `AGENTS.md:2` | — | Use Tero + cabal-devmelopner for work here. |
-| `agents--tero-layer-1-corpus-index` | section | — | Tero (Layer-1 corpus index) | `AGENTS.md:6` | — | Repo has docs/tero-index/index.json (generated/ refreshed via tero-mcp/scripts/generateliteindex.py). |
-| `agents--agent-with-context` | other | — | agent with context: | `AGENTS.md:18` | — | uv run --project ../cabal-devmelopner cabal-devmelopner "task description here" --use-tero |
-| `agents--working-with-cabal-devmelopner-agent-tool` | section | — | Working with cabal-devmelopner agent tool | `AGENTS.md:24` | — | This project is prepared for integration: |
-| `agents--local-checks` | section | — | Local checks | `AGENTS.md:36` | — | Look for: |
-| `agents--further-reading` | section | — | Further reading | `AGENTS.md:44` | — | - README.md |
+| `agents--tero-layer-1-corpus-index` | section | — | Tero (Layer-1 corpus index) | `AGENTS.md:8` | — | Repo has docs/tero-index/index.json (generated/ refreshed via tero-mcp/scripts/generateliteindex.py). |
+| `agents--agent-with-context` | other | — | agent with context: | `AGENTS.md:20` | — | uv run --project ../cabal-devmelopner cabal-devmelopner "task description here" --use-tero |
+| `agents--working-with-cabal-devmelopner-agent-tool` | section | — | Working with cabal-devmelopner agent tool | `AGENTS.md:26` | — | This project is prepared for integration: |
+| `agents--local-checks` | section | — | Local checks | `AGENTS.md:38` | — | Look for: |
+| `agents--further-reading` | section | — | Further reading | `AGENTS.md:46` | — | - README.md |
 | `contributing` | section | — | Contributing to memory-gate-rs | `CONTRIBUTING.md:1` | — | Thank you for your interest in contributing to memory-gate-rs! This document provides |
 | `contributing--code-of-conduct` | section | — | Code of Conduct | `CONTRIBUTING.md:6` | — | This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). |
 | `contributing--getting-started` | section | — | Getting Started | `CONTRIBUTING.md:11` | — | - Rust 1.92 or later (check with rustc --version) |
