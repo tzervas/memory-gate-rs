@@ -115,39 +115,40 @@ mod noop_metrics {
 
     /// No-op: Record a memory operation.
     #[inline]
-    pub fn record_operation(_operation_type: &str, _status: &str) {}
+    pub const fn record_operation(_operation_type: &str, _status: &str) {}
 
     /// No-op: Record store latency.
     #[inline]
-    pub fn record_store_latency(_store_type: &str, _duration: Duration) {}
+    pub const fn record_store_latency(_store_type: &str, _duration: Duration) {}
 
     /// No-op: Record retrieval latency.
     #[inline]
-    pub fn record_retrieval_latency(_store_type: &str, _duration: Duration) {}
+    pub const fn record_retrieval_latency(_store_type: &str, _duration: Duration) {}
 
     /// No-op: Set the items count gauge.
     #[inline]
-    pub fn set_items_count(_store_type: &str, _collection_name: &str, _count: usize) {}
+    pub const fn set_items_count(_store_type: &str, _collection_name: &str, _count: usize) {}
 
     /// No-op: Record a consolidation run.
     #[inline]
-    pub fn record_consolidation_run(_status: &str) {}
+    pub const fn record_consolidation_run(_status: &str) {}
 
     /// No-op: Record consolidation duration.
     #[inline]
-    pub fn record_consolidation_duration(_duration: Duration) {}
+    pub const fn record_consolidation_duration(_duration: Duration) {}
 
     /// No-op: Record items processed during consolidation.
     #[inline]
-    pub fn record_consolidation_items(_processed: usize, _deleted: usize) {}
+    pub const fn record_consolidation_items(_processed: usize, _deleted: usize) {}
 
     /// No-op: Record an agent task.
     #[inline]
-    pub fn record_agent_task(_agent_name: &str, _domain: &str, _status: &str) {}
+    pub const fn record_agent_task(_agent_name: &str, _domain: &str, _status: &str) {}
 
     /// No-op: Record agent task duration.
     #[inline]
-    pub fn record_agent_task_duration(_agent_name: &str, _domain: &str, _duration: Duration) {}
+    pub const fn record_agent_task_duration(_agent_name: &str, _domain: &str, _duration: Duration) {
+    }
 }
 
 #[cfg(not(feature = "metrics"))]

@@ -2,12 +2,13 @@
 
 use chrono::{Duration, Utc};
 use memory_gate_rs::{
-    adapters::PassthroughAdapter,
-    storage::InMemoryStore,
-    AgentDomain, GatewayConfig, LearningContext, MemoryGateway,
+    adapters::PassthroughAdapter, storage::InMemoryStore, AgentDomain, GatewayConfig,
+    LearningContext, MemoryGateway,
 };
 
-fn create_gateway_with_config(config: GatewayConfig) -> MemoryGateway<PassthroughAdapter, InMemoryStore> {
+fn create_gateway_with_config(
+    config: GatewayConfig,
+) -> MemoryGateway<PassthroughAdapter, InMemoryStore> {
     MemoryGateway::new(PassthroughAdapter, InMemoryStore::new(), config)
 }
 
@@ -30,17 +31,23 @@ async fn test_consolidation_removes_old_low_importance() {
     let old_high = LearningContext::new("Old high importance", AgentDomain::General)
         .with_importance(0.9)
         .with_timestamp(Utc::now() - Duration::days(5));
-    gateway.learn_from_interaction(old_high, None).await.unwrap();
+    gateway
+        .learn_from_interaction(old_high, None)
+        .await
+        .unwrap();
 
     // Add new, low-importance memory (should be kept - not old enough)
-    let new_low = LearningContext::new("New low importance", AgentDomain::General)
-        .with_importance(0.1);
+    let new_low =
+        LearningContext::new("New low importance", AgentDomain::General).with_importance(0.1);
     gateway.learn_from_interaction(new_low, None).await.unwrap();
 
     // Add new, high-importance memory (should be kept)
-    let new_high = LearningContext::new("New high importance", AgentDomain::General)
-        .with_importance(0.9);
-    gateway.learn_from_interaction(new_high, None).await.unwrap();
+    let new_high =
+        LearningContext::new("New high importance", AgentDomain::General).with_importance(0.9);
+    gateway
+        .learn_from_interaction(new_high, None)
+        .await
+        .unwrap();
 
     assert_eq!(gateway.count().await.unwrap(), 4);
 
@@ -53,10 +60,16 @@ async fn test_consolidation_removes_old_low_importance() {
     assert_eq!(gateway.count().await.unwrap(), 3);
 
     // Verify the correct one was deleted
-    let results = gateway.retrieve_context("Old low", None, None).await.unwrap();
+    let results = gateway
+        .retrieve_context("Old low", None, None)
+        .await
+        .unwrap();
     assert!(results.is_empty());
 
-    let results = gateway.retrieve_context("Old high", None, None).await.unwrap();
+    let results = gateway
+        .retrieve_context("Old high", None, None)
+        .await
+        .unwrap();
     assert_eq!(results.len(), 1);
 }
 

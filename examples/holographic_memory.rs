@@ -47,7 +47,9 @@ fn demo_vsa_operations() {
 
     // Random vectors are nearly orthogonal
     let sim = france.cosine_similarity(&germany);
-    println!("Similarity(france, germany) = {sim:.4} (should be ~0, random vectors are orthogonal)");
+    println!(
+        "Similarity(france, germany) = {sim:.4} (should be ~0, random vectors are orthogonal)"
+    );
 
     // BINDING: Create associations
     // France record: country->france + capital->paris
@@ -71,13 +73,26 @@ fn demo_vsa_operations() {
     println!("\nQuery: What is the capital of France?");
     println!("  Similarity to 'paris': {paris_sim:.4}");
     println!("  Similarity to 'berlin': {berlin_sim:.4}");
-    println!("  Answer: {} (paris wins!)", if paris_sim > berlin_sim { "paris" } else { "berlin" });
+    println!(
+        "  Answer: {} (paris wins!)",
+        if paris_sim > berlin_sim {
+            "paris"
+        } else {
+            "berlin"
+        }
+    );
 
     // BUNDLING: Superposition of multiple items
     let european_capitals = paris.bundle(&berlin);
     println!("\nBundled 'paris' and 'berlin' into european_capitals");
-    println!("  Similarity to paris: {:.4}", european_capitals.cosine_similarity(&paris));
-    println!("  Similarity to berlin: {:.4}", european_capitals.cosine_similarity(&berlin));
+    println!(
+        "  Similarity to paris: {:.4}",
+        european_capitals.cosine_similarity(&paris)
+    );
+    println!(
+        "  Similarity to berlin: {:.4}",
+        european_capitals.cosine_similarity(&berlin)
+    );
     println!("  (Bundle is similar to both constituents!)");
 
     // PERMUTATION: Sequence encoding
@@ -93,9 +108,18 @@ fn demo_vsa_operations() {
     let decoded = sequence.decode_sequence_position(1, &position_base);
     println!("\nSequence encoding: [first, second, third]");
     println!("  Decoded position 1:");
-    println!("    Sim to 'first': {:.4}", decoded.cosine_similarity(&items[0]));
-    println!("    Sim to 'second': {:.4}", decoded.cosine_similarity(&items[1]));
-    println!("    Sim to 'third': {:.4}", decoded.cosine_similarity(&items[2]));
+    println!(
+        "    Sim to 'first': {:.4}",
+        decoded.cosine_similarity(&items[0])
+    );
+    println!(
+        "    Sim to 'second': {:.4}",
+        decoded.cosine_similarity(&items[1])
+    );
+    println!(
+        "    Sim to 'third': {:.4}",
+        decoded.cosine_similarity(&items[2])
+    );
 
     println!();
 }
@@ -114,12 +138,42 @@ async fn demo_holographic_store() -> Result<(), Box<dyn std::error::Error>> {
 
     // Store operational knowledge
     let experiences = vec![
-        ("nginx_restart", "nginx service restart fixed high CPU usage on production servers", AgentDomain::Infrastructure, 0.9),
-        ("docker_networking", "docker container networking issues resolved by recreating bridge network", AgentDomain::Infrastructure, 0.8),
-        ("k8s_pod_crash", "kubernetes pod crashloopbackoff caused by memory limit too low", AgentDomain::Infrastructure, 0.85),
-        ("redis_memory", "redis out of memory error fixed by increasing maxmemory config", AgentDomain::Infrastructure, 0.75),
-        ("api_timeout", "API timeout errors traced to database connection pool exhaustion", AgentDomain::Infrastructure, 0.7),
-        ("ssl_renewal", "SSL certificate renewal automated with certbot cron job", AgentDomain::Infrastructure, 0.65),
+        (
+            "nginx_restart",
+            "nginx service restart fixed high CPU usage on production servers",
+            AgentDomain::Infrastructure,
+            0.9,
+        ),
+        (
+            "docker_networking",
+            "docker container networking issues resolved by recreating bridge network",
+            AgentDomain::Infrastructure,
+            0.8,
+        ),
+        (
+            "k8s_pod_crash",
+            "kubernetes pod crashloopbackoff caused by memory limit too low",
+            AgentDomain::Infrastructure,
+            0.85,
+        ),
+        (
+            "redis_memory",
+            "redis out of memory error fixed by increasing maxmemory config",
+            AgentDomain::Infrastructure,
+            0.75,
+        ),
+        (
+            "api_timeout",
+            "API timeout errors traced to database connection pool exhaustion",
+            AgentDomain::Infrastructure,
+            0.7,
+        ),
+        (
+            "ssl_renewal",
+            "SSL certificate renewal automated with certbot cron job",
+            AgentDomain::Infrastructure,
+            0.65,
+        ),
     ];
 
     println!("Storing {} operational memories...", experiences.len());
@@ -143,7 +197,12 @@ async fn demo_holographic_store() -> Result<(), Box<dyn std::error::Error>> {
         println!("\nQuery: '{query}'");
         let results = store.retrieve_context(query, 3, None).await?;
         for (i, ctx) in results.iter().enumerate() {
-            println!("  {}. [importance={:.2}] {}", i + 1, ctx.importance, ctx.content);
+            println!(
+                "  {}. [importance={:.2}] {}",
+                i + 1,
+                ctx.importance,
+                ctx.content
+            );
         }
     }
 
@@ -169,23 +228,31 @@ async fn demo_analogical_reasoning() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Store some knowledge for the codebook to learn
-    store.store_experience(
-        "k1",
-        LearningContext::new("france paris capital city", AgentDomain::General),
-    ).await?;
-    store.store_experience(
-        "k2", 
-        LearningContext::new("germany berlin capital city", AgentDomain::General),
-    ).await?;
-    store.store_experience(
-        "k3",
-        LearningContext::new("spain madrid capital city", AgentDomain::General),
-    ).await?;
+    store
+        .store_experience(
+            "k1",
+            LearningContext::new("france paris capital city", AgentDomain::General),
+        )
+        .await?;
+    store
+        .store_experience(
+            "k2",
+            LearningContext::new("germany berlin capital city", AgentDomain::General),
+        )
+        .await?;
+    store
+        .store_experience(
+            "k3",
+            LearningContext::new("spain madrid capital city", AgentDomain::General),
+        )
+        .await?;
 
     // Analogical query: france:paris :: germany:?
     // This uses the relational structure to find analogies
     println!("Analogical Query: france:paris :: germany:?");
-    let results = store.analogical_search("france", "paris", "germany", 5).await;
+    let results = store
+        .analogical_search("france", "paris", "germany", 5)
+        .await;
     println!("Top results:");
     for (symbol, similarity) in results.iter().take(3) {
         println!("  {symbol}: {similarity:.4}");

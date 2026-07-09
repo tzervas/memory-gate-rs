@@ -371,10 +371,7 @@ mod tests {
         let key = gateway.learn_from_interaction(ctx, None).await.unwrap();
         assert!(!key.is_empty());
 
-        let results = gateway
-            .retrieve_context("nginx", None, None)
-            .await
-            .unwrap();
+        let results = gateway.retrieve_context("nginx", None, None).await.unwrap();
         assert_eq!(results.len(), 1);
         assert!(results[0].content.contains("nginx"));
     }
@@ -383,18 +380,14 @@ mod tests {
     async fn test_learn_with_feedback() {
         let gateway = create_test_gateway();
 
-        let ctx =
-            LearningContext::new("test content", AgentDomain::General).with_importance(1.0);
+        let ctx = LearningContext::new("test content", AgentDomain::General).with_importance(1.0);
 
         gateway
             .learn_from_interaction(ctx, Some(0.5))
             .await
             .unwrap();
 
-        let results = gateway
-            .retrieve_context("test", None, None)
-            .await
-            .unwrap();
+        let results = gateway.retrieve_context("test", None, None).await.unwrap();
 
         // Importance should be blended: (1.0 + 0.5) / 2 = 0.75
         assert!((results[0].importance - 0.75).abs() < f32::EPSILON);
@@ -423,17 +416,11 @@ mod tests {
         let gateway = create_test_gateway();
 
         gateway
-            .learn_from_interaction(
-                LearningContext::new("test1", AgentDomain::General),
-                None,
-            )
+            .learn_from_interaction(LearningContext::new("test1", AgentDomain::General), None)
             .await
             .unwrap();
         gateway
-            .learn_from_interaction(
-                LearningContext::new("test2", AgentDomain::General),
-                None,
-            )
+            .learn_from_interaction(LearningContext::new("test2", AgentDomain::General), None)
             .await
             .unwrap();
 
@@ -478,8 +465,8 @@ mod tests {
             .with_timestamp(Utc::now() - Duration::days(5));
 
         // Add a new, high-importance memory
-        let new_ctx = LearningContext::new("new high importance", AgentDomain::General)
-            .with_importance(0.9);
+        let new_ctx =
+            LearningContext::new("new high importance", AgentDomain::General).with_importance(0.9);
 
         gateway.learn_from_interaction(old_ctx, None).await.unwrap();
         gateway.learn_from_interaction(new_ctx, None).await.unwrap();

@@ -85,7 +85,10 @@ mod tests {
         let ctx = LearningContext::new("test", AgentDomain::General).with_importance(0.5);
 
         // Feedback above 1.0 should be clamped
-        let result = adapter.adapt_knowledge(ctx.clone(), Some(2.0)).await.unwrap();
+        let result = adapter
+            .adapt_knowledge(ctx.clone(), Some(2.0))
+            .await
+            .unwrap();
         assert!((result.importance - 0.75).abs() < f32::EPSILON); // (0.5 + 1.0) / 2
 
         // Feedback below 0.0 should be clamped

@@ -1,9 +1,6 @@
 //! Base memory-enabled agent implementation.
 
-use crate::{
-    AgentDomain, KnowledgeStore, LearningContext, MemoryAdapter, MemoryGateway,
-    Result,
-};
+use crate::{AgentDomain, KnowledgeStore, LearningContext, MemoryAdapter, MemoryGateway, Result};
 use serde_json::Value;
 use std::sync::Arc;
 use tracing::{debug, instrument};
@@ -196,7 +193,9 @@ where
         Fut: std::future::Future<Output = Result<(String, f32)>>,
     {
         // Build enhanced context with memories
-        let enhanced = self.build_enhanced_context(task_input, task_context).await?;
+        let enhanced = self
+            .build_enhanced_context(task_input, task_context)
+            .await?;
         let memory_count = enhanced.retrieved_memories.len();
 
         // Execute the task
@@ -204,10 +203,12 @@ where
 
         // Optionally store the interaction
         let stored_key = if store_memory {
-            let learning_content = format!(
-                "Task: {task_input}\nResult: {result}\nConfidence: {confidence:.2}"
-            );
-            Some(self.store_learning(&learning_content, Some(confidence)).await?)
+            let learning_content =
+                format!("Task: {task_input}\nResult: {result}\nConfidence: {confidence:.2}");
+            Some(
+                self.store_learning(&learning_content, Some(confidence))
+                    .await?,
+            )
         } else {
             None
         };
@@ -245,7 +246,7 @@ impl EnhancedContext {
     #[must_use]
     pub fn format_memories(&self) -> String {
         use std::fmt::Write;
-        
+
         if self.retrieved_memories.is_empty() {
             return String::from("No relevant memories found.");
         }
@@ -384,11 +385,12 @@ mod tests {
         // Process a task - query must be a substring of stored content
         let output = agent
             .process_task(
-                "nginx",  // Simple term that will match
+                "nginx", // Simple term that will match
                 None,
                 true,
                 |ctx| async move {
-                    let result = format!("Processed with {} memories", ctx.retrieved_memories.len());
+                    let result =
+                        format!("Processed with {} memories", ctx.retrieved_memories.len());
                     Ok((result, 0.85))
                 },
             )

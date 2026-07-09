@@ -30,13 +30,13 @@ pub enum BundlingMode {
 pub trait VsaOps {
     /// Perform binding operation.
     fn bind(&self, a: &HolographicVector, b: &HolographicVector) -> HolographicVector;
-    
+
     /// Perform unbinding operation.
     fn unbind(&self, bound: &HolographicVector, key: &HolographicVector) -> HolographicVector;
-    
+
     /// Perform bundling operation.
     fn bundle(&self, vectors: &[&HolographicVector]) -> Option<HolographicVector>;
-    
+
     /// Perform permutation.
     fn permute(&self, v: &HolographicVector, amount: i32) -> HolographicVector;
 }
@@ -56,14 +56,14 @@ impl MapVsaOps {
     pub fn new() -> Self {
         Self::default()
     }
-    
+
     /// Set binding mode.
     #[must_use]
     pub const fn with_binding_mode(mut self, mode: BindingMode) -> Self {
         self.binding_mode = mode;
         self
     }
-    
+
     /// Set bundling mode.
     #[must_use]
     pub const fn with_bundling_mode(mut self, mode: BundlingMode) -> Self {
@@ -87,7 +87,7 @@ impl VsaOps for MapVsaOps {
             }
         }
     }
-    
+
     fn unbind(&self, bound: &HolographicVector, key: &HolographicVector) -> HolographicVector {
         match self.binding_mode {
             BindingMode::Multiplicative | BindingMode::Xor => bound.unbind(key),
@@ -97,16 +97,14 @@ impl VsaOps for MapVsaOps {
             }
         }
     }
-    
+
     fn bundle(&self, vectors: &[&HolographicVector]) -> Option<HolographicVector> {
         if vectors.is_empty() {
             return None;
         }
-        
-        let refs: Vec<HolographicVector> = vectors.iter()
-            .map(|&v| v.clone())
-            .collect();
-        
+
+        let refs: Vec<HolographicVector> = vectors.iter().map(|&v| v.clone()).collect();
+
         match self.bundling_mode {
             BundlingMode::Additive => HolographicVector::bundle_all(&refs),
             BundlingMode::WeightedDecay => {
@@ -116,7 +114,8 @@ impl VsaOps for MapVsaOps {
                 }
                 let first = &refs[0];
                 let n = refs.len();
-                let others: Vec<(&HolographicVector, f32)> = refs[1..].iter()
+                let others: Vec<(&HolographicVector, f32)> = refs[1..]
+                    .iter()
                     .enumerate()
                     .map(|(i, v)| {
                         let weight = (i + 2) as f32 / n as f32; // Increasing weight
@@ -131,7 +130,7 @@ impl VsaOps for MapVsaOps {
             }
         }
     }
-    
+
     fn permute(&self, v: &HolographicVector, amount: i32) -> HolographicVector {
         v.permute(amount)
     }
@@ -161,21 +160,21 @@ impl ResonatorNetwork {
             convergence_threshold: 0.001,
         }
     }
-    
+
     /// Set maximum iterations.
     #[must_use]
     pub const fn with_max_iterations(mut self, max: usize) -> Self {
         self.max_iterations = max;
         self
     }
-    
+
     /// Set convergence threshold.
     #[must_use]
     pub const fn with_convergence_threshold(mut self, threshold: f32) -> Self {
         self.convergence_threshold = threshold;
         self
     }
-    
+
     /// Factorize a bound vector to find its components.
     ///
     /// Given a vector that is the product of multiple bindings,
@@ -190,24 +189,30 @@ impl ResonatorNetwork {
     ///
     /// Vector of (name, vector, confidence) tuples for recovered factors.
     #[must_use]
-    pub fn factorize(&self, bound: &HolographicVector, num_factors: usize) -> Vec<(String, HolographicVector, f32)> {
+    pub fn factorize(
+        &self,
+        bound: &HolographicVector,
+        num_factors: usize,
+    ) -> Vec<(String, HolographicVector, f32)> {
         if self.codebook.is_empty() || num_factors == 0 {
             return Vec::new();
         }
-        
+
         // Initialize factor estimates randomly from codebook
-        let mut factors: Vec<HolographicVector> = self.codebook.iter()
+        let mut factors: Vec<HolographicVector> = self
+            .codebook
+            .iter()
             .take(num_factors.min(self.codebook.len()))
             .map(|(_, v)| v.clone())
             .collect();
-        
+
         // Pad with copies if needed
         while factors.len() < num_factors {
             factors.push(factors[0].clone());
         }
-        
+
         let mut prev_sims = vec![0.0f32; num_factors];
-        
+
         for _iter in 0..self.max_iterations {
             for i in 0..num_factors {
                 // Compute product of all other factors
@@ -217,18 +222,20 @@ impl ResonatorNetwork {
                         other_product = other_product.bind(factor);
                     }
                 }
-                
+
                 // Unbind to get estimate for factor i
                 let estimate = bound.unbind(&other_product);
-                
+
                 // Find best match in codebook
-                let (_best_name, best_vec, best_sim) = self.codebook.iter()
+                let (_best_name, best_vec, best_sim) = self
+                    .codebook
+                    .iter()
                     .map(|(name, vec)| (name.clone(), vec.clone(), estimate.cosine_similarity(vec)))
                     .max_by(|a, b| a.2.partial_cmp(&b.2).unwrap())
                     .unwrap_or_else(|| (String::new(), estimate.clone(), 0.0));
-                
+
                 factors[i] = best_vec;
-                
+
                 // Check convergence
                 if (best_sim - prev_sims[i]).abs() < self.convergence_threshold {
                     // This factor has converged
@@ -236,32 +243,37 @@ impl ResonatorNetwork {
                 prev_sims[i] = best_sim;
             }
         }
-        
+
         // Return final factors with confidence
-        factors.into_iter()
+        factors
+            .into_iter()
             .filter_map(|factor| {
-                self.codebook.iter()
+                self.codebook
+                    .iter()
                     .map(|(name, vec)| (name.clone(), vec.clone(), factor.cosine_similarity(vec)))
                     .max_by(|a, b| a.2.partial_cmp(&b.2).unwrap())
             })
             .collect()
     }
-    
+
     /// Find the single best matching item in codebook.
     #[must_use]
     pub fn find_best_match(&self, query: &HolographicVector) -> Option<(String, f32)> {
-        self.codebook.iter()
+        self.codebook
+            .iter()
             .map(|(name, vec)| (name.clone(), query.cosine_similarity(vec)))
             .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
     }
-    
+
     /// Find top-k matches in codebook.
     #[must_use]
     pub fn find_top_k(&self, query: &HolographicVector, k: usize) -> Vec<(String, f32)> {
-        let mut matches: Vec<(String, f32)> = self.codebook.iter()
+        let mut matches: Vec<(String, f32)> = self
+            .codebook
+            .iter()
             .map(|(name, vec)| (name.clone(), query.cosine_similarity(vec)))
             .collect();
-        
+
         matches.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         matches.truncate(k);
         matches
@@ -276,36 +288,41 @@ mod tests {
     fn test_map_vsa_ops_bind_unbind() {
         let ops = MapVsaOps::new();
         let dim = 1000;
-        
+
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
         let b = HolographicVector::random_bipolar_seeded(dim, 123);
-        
+
         let bound = ops.bind(&a, &b);
         let recovered = ops.unbind(&bound, &b);
-        
+
         assert!(a.cosine_similarity(&recovered) > 0.99);
     }
 
     #[test]
     fn test_resonator_simple() {
         let dim = 10000;
-        
+
         // Create codebook
         let codebook: Vec<(String, HolographicVector)> = (0..10)
-            .map(|i| (format!("item_{i}"), HolographicVector::random_bipolar_seeded(dim, i)))
+            .map(|i| {
+                (
+                    format!("item_{i}"),
+                    HolographicVector::random_bipolar_seeded(dim, i),
+                )
+            })
             .collect();
-        
+
         // Bind two items
         let item_3 = codebook[3].1.clone();
         let item_7 = codebook[7].1.clone();
         let bound = item_3.bind(&item_7);
-        
+
         let network = ResonatorNetwork::new(codebook);
-        
+
         // Query with one factor to find the other
         let query = bound.unbind(&item_3);
         let matches = network.find_top_k(&query, 3);
-        
+
         assert_eq!(matches[0].0, "item_7", "Should find item_7 as best match");
     }
 }

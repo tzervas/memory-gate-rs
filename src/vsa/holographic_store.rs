@@ -213,13 +213,15 @@ impl HolographicStore {
         let mut codebook = self.codebook.write().await;
 
         // Tokenize content (simple whitespace + lowercase)
-        let tokens: Vec<&str> = context.content
+        let tokens: Vec<&str> = context
+            .content
             .split_whitespace()
             .take(self.config.content_tokens)
             .collect();
 
         // Create content encoding: bundle of position-bound tokens
-        let token_vecs: Vec<HolographicVector> = tokens.iter()
+        let token_vecs: Vec<HolographicVector> = tokens
+            .iter()
             .enumerate()
             .map(|(i, token)| {
                 let token_lower = token.to_lowercase();
@@ -272,7 +274,8 @@ impl HolographicStore {
             .take(self.config.content_tokens)
             .collect();
 
-        let token_vecs: Vec<HolographicVector> = tokens.iter()
+        let token_vecs: Vec<HolographicVector> = tokens
+            .iter()
             .enumerate()
             .map(|(i, token)| {
                 let token_lower = token.to_lowercase();
@@ -300,9 +303,7 @@ impl HolographicStore {
     /// Rebuild the entire holographic index.
     async fn rebuild_index(&self) {
         let traces = self.traces.read().await;
-        let vectors: Vec<HolographicVector> = traces.values()
-            .map(|t| t.vector.clone())
-            .collect();
+        let vectors: Vec<HolographicVector> = traces.values().map(|t| t.vector.clone()).collect();
 
         let mut index = self.holo_index.write().await;
         *index = HolographicVector::bundle_all(&vectors);
@@ -324,7 +325,8 @@ impl HolographicStore {
         }
 
         // Sort by importance and remove lowest
-        let mut items: Vec<(String, f32)> = traces.iter()
+        let mut items: Vec<(String, f32)> = traces
+            .iter()
             .map(|(k, v)| (k.clone(), v.importance))
             .collect();
         items.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
@@ -345,9 +347,10 @@ impl HolographicStore {
     /// effectively performing "unbinding" to find associated memories.
     pub async fn holographic_search(&self, query: &str, limit: usize) -> Vec<(String, f32)> {
         let query_vec = self.encode_query(query).await;
-        
+
         let traces = self.traces.read().await;
-        let mut results: Vec<(String, f32)> = traces.iter()
+        let mut results: Vec<(String, f32)> = traces
+            .iter()
             .map(|(key, trace)| {
                 let sim = query_vec.cosine_similarity(&trace.vector);
                 (key.clone(), sim)
@@ -365,24 +368,24 @@ impl HolographicStore {
     /// Given a relational pattern (A binds to B), finds what would
     /// bind to the query in the same way.
     pub async fn analogical_search(
-        &self, 
-        pattern_a: &str, 
-        pattern_b: &str, 
+        &self,
+        pattern_a: &str,
+        pattern_b: &str,
         query: &str,
         limit: usize,
     ) -> Vec<(String, f32)> {
         let mut codebook = self.codebook.write().await;
-        
+
         let a_vec = codebook.get_or_create(pattern_a);
         let b_vec = codebook.get_or_create(pattern_b);
         let query_vec = codebook.get_or_create(query);
-        
+
         // Compute relation: A ⊛ B^(-1) gives the "relationship"
         let relation = a_vec.bind(&b_vec);
-        
+
         // Apply relation to query: query ⊛ relation should give analogous result
         let analogy_vec = query_vec.bind(&relation);
-        
+
         // Find nearest in codebook
         codebook.find_nearest(&analogy_vec, limit)
     }
@@ -434,28 +437,28 @@ impl KnowledgeStore<LearningContext> for HolographicStore {
     async fn store_experience(&self, key: &str, experience: LearningContext) -> Result<()> {
         // Encode context to holographic vector
         let vector = self.encode_context(&experience).await;
-        
+
         // Create trace
         let trace = MemoryTrace::new(key.to_string(), vector.clone(), experience);
-        
+
         // Store trace
         {
             let mut traces = self.traces.write().await;
             traces.insert(key.to_string(), trace);
         }
-        
+
         // Update index
         self.update_index(&vector).await;
-        
+
         // Prune if needed
         self.prune_if_needed().await;
-        
+
         // Increment temporal position
         if self.config.enable_temporal {
             let mut pos = self.temporal_position.write().await;
             *pos += 1;
         }
-        
+
         Ok(())
     }
 
@@ -466,10 +469,11 @@ impl KnowledgeStore<LearningContext> for HolographicStore {
         domain_filter: Option<AgentDomain>,
     ) -> Result<Vec<LearningContext>> {
         let query_vec = self.encode_query(query).await;
-        
+
         let mut traces = self.traces.write().await;
-        
-        let mut results: Vec<(&mut MemoryTrace, f32)> = traces.values_mut()
+
+        let mut results: Vec<(&mut MemoryTrace, f32)> = traces
+            .values_mut()
             .filter(|trace| {
                 // Apply domain filter if specified
                 if let Some(ref filter) = domain_filter {
@@ -492,11 +496,12 @@ impl KnowledgeStore<LearningContext> for HolographicStore {
             let score_b = b.1 * b.0.importance;
             score_b.partial_cmp(&score_a).unwrap()
         });
-        
+
         results.truncate(limit);
-        
+
         // Touch accessed traces and return contexts
-        Ok(results.into_iter()
+        Ok(results
+            .into_iter()
             .map(|(trace, _)| {
                 trace.touch();
                 trace.context.clone()
@@ -509,12 +514,12 @@ impl KnowledgeStore<LearningContext> for HolographicStore {
             let mut traces = self.traces.write().await;
             traces.remove(key).is_some()
         };
-        
+
         if removed {
             // Rebuild index after deletion
             self.rebuild_index().await;
         }
-        
+
         Ok(())
     }
 
@@ -554,15 +559,13 @@ mod tests {
     use crate::types::AgentDomain;
 
     fn create_test_context(content: &str, domain: AgentDomain, importance: f32) -> LearningContext {
-        LearningContext::new(content.to_string(), domain)
-            .with_importance(importance)
+        LearningContext::new(content.to_string(), domain).with_importance(importance)
     }
 
     #[tokio::test]
     async fn test_store_and_retrieve() {
         let store = HolographicStore::with_config(
-            HolographicConfig::with_dimensions(5000)
-                .with_threshold(0.05)  // Very low threshold for short content
+            HolographicConfig::with_dimensions(5000).with_threshold(0.05), // Very low threshold for short content
         );
 
         let ctx = create_test_context(
@@ -573,7 +576,10 @@ mod tests {
 
         store.store_experience("key1", ctx).await.unwrap();
 
-        let results = store.retrieve_context("nginx server CPU", 5, None).await.unwrap();
+        let results = store
+            .retrieve_context("nginx server CPU", 5, None)
+            .await
+            .unwrap();
         assert!(!results.is_empty(), "Should find at least one result");
         assert!(results[0].content.contains("nginx"));
     }
@@ -581,28 +587,34 @@ mod tests {
     #[tokio::test]
     async fn test_domain_filter() {
         let store = HolographicStore::with_config(
-            HolographicConfig::with_dimensions(1000)
-                .with_threshold(0.1)
+            HolographicConfig::with_dimensions(1000).with_threshold(0.1),
         );
 
-        store.store_experience(
-            "infra1",
-            create_test_context("server restart", AgentDomain::Infrastructure, 0.7),
-        ).await.unwrap();
+        store
+            .store_experience(
+                "infra1",
+                create_test_context("server restart", AgentDomain::Infrastructure, 0.7),
+            )
+            .await
+            .unwrap();
 
-        store.store_experience(
-            "dev1",
-            create_test_context("code restart process", AgentDomain::Deployment, 0.7),
-        ).await.unwrap();
+        store
+            .store_experience(
+                "dev1",
+                create_test_context("code restart process", AgentDomain::Deployment, 0.7),
+            )
+            .await
+            .unwrap();
 
         // Should only find infrastructure
-        let results = store.retrieve_context(
-            "restart",
-            10,
-            Some(AgentDomain::Infrastructure),
-        ).await.unwrap();
+        let results = store
+            .retrieve_context("restart", 10, Some(AgentDomain::Infrastructure))
+            .await
+            .unwrap();
 
-        assert!(results.iter().all(|c| c.domain == AgentDomain::Infrastructure));
+        assert!(results
+            .iter()
+            .all(|c| c.domain == AgentDomain::Infrastructure));
     }
 
     #[tokio::test]
@@ -610,18 +622,32 @@ mod tests {
         let store = HolographicStore::with_config(
             HolographicConfig::with_dimensions(5000)
                 .with_threshold(0.1)
-                .with_seed(42)
+                .with_seed(42),
         );
 
-        store.store_experience(
-            "k1",
-            create_test_context("docker container networking issues", AgentDomain::Infrastructure, 0.8),
-        ).await.unwrap();
+        store
+            .store_experience(
+                "k1",
+                create_test_context(
+                    "docker container networking issues",
+                    AgentDomain::Infrastructure,
+                    0.8,
+                ),
+            )
+            .await
+            .unwrap();
 
-        store.store_experience(
-            "k2", 
-            create_test_context("kubernetes pod networking problems", AgentDomain::Infrastructure, 0.7),
-        ).await.unwrap();
+        store
+            .store_experience(
+                "k2",
+                create_test_context(
+                    "kubernetes pod networking problems",
+                    AgentDomain::Infrastructure,
+                    0.7,
+                ),
+            )
+            .await
+            .unwrap();
 
         let results = store.holographic_search("network container", 5).await;
         assert!(!results.is_empty());
@@ -630,11 +656,14 @@ mod tests {
     #[tokio::test]
     async fn test_stats() {
         let store = HolographicStore::new();
-        
-        store.store_experience(
-            "k1",
-            create_test_context("test content", AgentDomain::General, 0.5),
-        ).await.unwrap();
+
+        store
+            .store_experience(
+                "k1",
+                create_test_context("test content", AgentDomain::General, 0.5),
+            )
+            .await
+            .unwrap();
 
         let stats = store.stats().await;
         assert_eq!(stats.trace_count, 1);
@@ -645,14 +674,14 @@ mod tests {
     #[tokio::test]
     async fn test_clear() {
         let store = HolographicStore::new();
-        
-        store.store_experience(
-            "k1",
-            create_test_context("test", AgentDomain::General, 0.5),
-        ).await.unwrap();
+
+        store
+            .store_experience("k1", create_test_context("test", AgentDomain::General, 0.5))
+            .await
+            .unwrap();
 
         store.clear().await.unwrap();
-        
+
         let stats = store.stats().await;
         assert_eq!(stats.trace_count, 0);
         assert!(!stats.has_index);

@@ -153,7 +153,9 @@ impl VsaCodebook {
     /// Find the nearest symbol to a query vector.
     #[must_use]
     pub fn find_nearest(&self, query: &HolographicVector, top_k: usize) -> Vec<(String, f32)> {
-        let mut results: Vec<(String, f32)> = self.entries.iter()
+        let mut results: Vec<(String, f32)> = self
+            .entries
+            .iter()
             .map(|(sym, entry)| (sym.clone(), query.cosine_similarity(&entry.vector)))
             .collect();
 
@@ -164,8 +166,14 @@ impl VsaCodebook {
 
     /// Find nearest with threshold filtering.
     #[must_use]
-    pub fn find_above_threshold(&self, query: &HolographicVector, threshold: f32) -> Vec<(String, f32)> {
-        let mut results: Vec<(String, f32)> = self.entries.iter()
+    pub fn find_above_threshold(
+        &self,
+        query: &HolographicVector,
+        threshold: f32,
+    ) -> Vec<(String, f32)> {
+        let mut results: Vec<(String, f32)> = self
+            .entries
+            .iter()
             .map(|(sym, entry)| (sym.clone(), query.cosine_similarity(&entry.vector)))
             .filter(|(_, sim)| *sim >= threshold)
             .collect();
@@ -189,7 +197,8 @@ impl VsaCodebook {
     /// `role_1 ⊛ filler_1 + role_2 ⊛ filler_2 + ...`
     #[must_use]
     pub fn create_record(&mut self, pairs: &[(&str, &str)]) -> HolographicVector {
-        let bound_pairs: Vec<HolographicVector> = pairs.iter()
+        let bound_pairs: Vec<HolographicVector> = pairs
+            .iter()
             .map(|(role, filler)| {
                 let role_vec = self.get_or_create_role(role);
                 let filler_vec = self.get_or_create(filler);
@@ -219,7 +228,7 @@ impl VsaCodebook {
     #[must_use]
     pub fn entries_by_usage(&self) -> Vec<&CodebookEntry> {
         let mut entries: Vec<&CodebookEntry> = self.entries.values().collect();
-        entries.sort_by(|a, b| b.usage_count.cmp(&a.usage_count));
+        entries.sort_by_key(|a| std::cmp::Reverse(a.usage_count));
         entries
     }
 
@@ -237,7 +246,8 @@ impl VsaCodebook {
     /// Export codebook to list of (symbol, vector) pairs.
     #[must_use]
     pub fn export(&self) -> Vec<(String, HolographicVector)> {
-        self.entries.iter()
+        self.entries
+            .iter()
             .map(|(sym, entry)| (sym.clone(), entry.vector.clone()))
             .collect()
     }
@@ -274,34 +284,37 @@ mod tests {
     #[test]
     fn test_get_or_create_consistent() {
         let mut cb = VsaCodebook::new(1000);
-        
+
         let v1 = cb.get_or_create("test");
         let v2 = cb.get_or_create("test");
-        
-        assert!(v1.cosine_similarity(&v2) > 0.99, "Same symbol should return same vector");
+
+        assert!(
+            v1.cosine_similarity(&v2) > 0.99,
+            "Same symbol should return same vector"
+        );
     }
 
     #[test]
     fn test_different_symbols_orthogonal() {
         let mut cb = VsaCodebook::new(10000);
-        
+
         let v1 = cb.get_or_create("apple");
         let v2 = cb.get_or_create("banana");
-        
+
         let sim = v1.cosine_similarity(&v2);
-        assert!(sim.abs() < 0.1, "Different symbols should be nearly orthogonal, got {sim}");
+        assert!(
+            sim.abs() < 0.1,
+            "Different symbols should be nearly orthogonal, got {sim}"
+        );
     }
 
     #[test]
     fn test_record_query() {
         let mut cb = VsaCodebook::with_seed(10000, 42);
-        
+
         // Create a record: country=france, capital=paris
-        let record = cb.create_record(&[
-            ("country", "france"),
-            ("capital", "paris"),
-        ]);
-        
+        let record = cb.create_record(&[("country", "france"), ("capital", "paris")]);
+
         // Query: what is the capital?
         let results = cb.query_record(&record, "capital");
         assert!(!results.is_empty());
@@ -311,15 +324,15 @@ mod tests {
     #[test]
     fn test_find_nearest() {
         let mut cb = VsaCodebook::new(10000);
-        
+
         // Add some symbols
         let target = cb.get_or_create("target");
         let _ = cb.get_or_create("other1");
         let _ = cb.get_or_create("other2");
-        
+
         // Add some noise to target
         let noisy = target.bundle(&HolographicVector::random_bipolar(10000));
-        
+
         let results = cb.find_nearest(&noisy, 3);
         assert_eq!(results[0].0, "target", "Should find target as nearest");
     }

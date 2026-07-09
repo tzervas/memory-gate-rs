@@ -1,10 +1,9 @@
 //! Benchmarks for storage operations.
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use memory_gate_rs::{
-    adapters::PassthroughAdapter,
-    storage::InMemoryStore,
-    AgentDomain, GatewayConfig, KnowledgeStore, LearningContext, MemoryGateway,
+    adapters::PassthroughAdapter, storage::InMemoryStore, AgentDomain, GatewayConfig,
+    KnowledgeStore, LearningContext, MemoryGateway,
 };
 use tokio::runtime::Runtime;
 
@@ -79,10 +78,8 @@ fn bench_bulk_operations(c: &mut Criterion) {
             let gateway = create_gateway();
             rt.block_on(async {
                 for i in 0..100 {
-                    let ctx = LearningContext::new(
-                        format!("Bulk content {i}"),
-                        AgentDomain::General,
-                    );
+                    let ctx =
+                        LearningContext::new(format!("Bulk content {i}"), AgentDomain::General);
                     gateway.learn_from_interaction(ctx, None).await.unwrap();
                 }
             });
@@ -103,7 +100,10 @@ fn bench_in_memory_store(c: &mut Criterion) {
                     black_box(format!("Direct store content {i}")),
                     AgentDomain::General,
                 );
-                store.store_experience(&format!("key{i}"), ctx).await.unwrap();
+                store
+                    .store_experience(&format!("key{i}"), ctx)
+                    .await
+                    .unwrap();
             });
             i += 1;
         });
@@ -119,7 +119,10 @@ fn bench_in_memory_store(c: &mut Criterion) {
                     format!("Searchable content item {i}"),
                     AgentDomain::General,
                 );
-                store.store_experience(&format!("key{i}"), ctx).await.unwrap();
+                store
+                    .store_experience(&format!("key{i}"), ctx)
+                    .await
+                    .unwrap();
             }
         });
 

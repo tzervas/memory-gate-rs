@@ -4,8 +4,8 @@
 
 use async_trait::async_trait;
 use memory_gate_rs::{
-    storage::InMemoryStore, AgentDomain, GatewayConfig, LearningContext,
-    MemoryGateway, MemoryAdapter, Result,
+    storage::InMemoryStore, AgentDomain, GatewayConfig, LearningContext, MemoryAdapter,
+    MemoryGateway, Result,
 };
 
 /// A custom adapter that boosts importance for security-related content
@@ -55,12 +55,12 @@ impl MemoryAdapter<LearningContext> for SecurityAwareAdapter {
         // Boost security-related content
         if self.contains_security_keyword(&context.content) {
             context.importance = (context.importance + self.security_boost).min(1.0);
-            
+
             // Add security flag to metadata
             let mut metadata = context.metadata.unwrap_or_default();
             metadata.insert("security_flagged".to_string(), "true".to_string());
             context.metadata = Some(metadata);
-            
+
             println!(
                 "  [SecurityAdapter] Boosted importance for security content: {:.2}",
                 context.importance
@@ -96,8 +96,8 @@ async fn main() -> Result<()> {
 
     for (content, importance) in interactions {
         println!("Processing: {}", content);
-        let ctx = LearningContext::new(content, AgentDomain::Infrastructure)
-            .with_importance(importance);
+        let ctx =
+            LearningContext::new(content, AgentDomain::Infrastructure).with_importance(importance);
         gateway.learn_from_interaction(ctx, None).await?;
     }
 
@@ -107,7 +107,9 @@ async fn main() -> Result<()> {
     let results = gateway.retrieve_context("", Some(10), None).await?;
 
     for (i, ctx) in results.iter().enumerate() {
-        let security_flag = ctx.metadata.as_ref()
+        let security_flag = ctx
+            .metadata
+            .as_ref()
             .and_then(|m| m.get("security_flagged"))
             .map(|_| "🔒")
             .unwrap_or("  ");

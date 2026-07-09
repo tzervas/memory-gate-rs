@@ -104,8 +104,9 @@ impl SqliteVecStore {
     /// ```
     pub async fn open_in_memory() -> Result<Self> {
         Self::open_with_connection(
-            Connection::open_in_memory()
-                .map_err(|e| StorageError::connection(format!("Failed to open in-memory DB: {e}")))?,
+            Connection::open_in_memory().map_err(|e| {
+                StorageError::connection(format!("Failed to open in-memory DB: {e}"))
+            })?,
         )
         .await
     }
@@ -158,11 +159,11 @@ impl SqliteVecStore {
     }
 
     /// Check for sqlite-vec extension availability.
-    /// 
+    ///
     /// Note: Since this crate forbids unsafe code, we cannot dynamically load
     /// the sqlite-vec extension. Instead, we use a fallback approach with
     /// manual cosine similarity calculation which works without the extension.
-    /// 
+    ///
     /// If you need native sqlite-vec performance, compile sqlite with the
     /// vec0 extension statically linked.
     fn load_vec_extension(_conn: &Connection) {
@@ -242,10 +243,7 @@ impl SqliteVecStore {
 
     /// Convert embedding to blob format for storage.
     fn embedding_to_blob(embedding: &[f32]) -> Vec<u8> {
-        embedding
-            .iter()
-            .flat_map(|f| f.to_le_bytes())
-            .collect()
+        embedding.iter().flat_map(|f| f.to_le_bytes()).collect()
     }
 
     /// Convert blob back to embedding vector.
@@ -282,7 +280,6 @@ impl SqliteVecStore {
         )
         .is_ok()
     }
-
 }
 
 #[async_trait]
@@ -399,8 +396,9 @@ impl KnowledgeStore<LearningContext> for SqliteVecStore {
 
         match result {
             Ok(json) => {
-                let context: LearningContext = serde_json::from_str(&json)
-                    .map_err(|e| StorageError::query(format!("Failed to deserialize context: {e}")))?;
+                let context: LearningContext = serde_json::from_str(&json).map_err(|e| {
+                    StorageError::query(format!("Failed to deserialize context: {e}"))
+                })?;
                 Ok(Some(context))
             }
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
@@ -462,9 +460,10 @@ impl SqliteVecStore {
                 .map_err(|e| StorageError::query(format!("Failed to prepare search query: {e}")))?;
 
             let results: Vec<String> = stmt
-                .query_map(params![embedding_blob, domain.as_str(), limit as i64], |row| {
-                    row.get::<_, String>(0)
-                })
+                .query_map(
+                    params![embedding_blob, domain.as_str(), limit as i64],
+                    |row| row.get::<_, String>(0),
+                )
                 .map_err(|e| StorageError::query(format!("Failed to execute search: {e}")))?
                 .filter_map(std::result::Result::ok)
                 .collect();
@@ -560,11 +559,8 @@ impl SqliteVecStore {
         scored.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
         // Take top results
-        let contexts: Vec<LearningContext> = scored
-            .into_iter()
-            .take(limit)
-            .map(|(_, ctx)| ctx)
-            .collect();
+        let contexts: Vec<LearningContext> =
+            scored.into_iter().take(limit).map(|(_, ctx)| ctx).collect();
 
         Ok(contexts)
     }
@@ -586,7 +582,7 @@ mod tests {
         let embedding = vec![1.0_f32, 2.0, 3.0, 4.5, -1.0, 0.0];
         let blob = SqliteVecStore::embedding_to_blob(&embedding);
         let recovered = SqliteVecStore::blob_to_embedding(&blob);
-        
+
         assert_eq!(embedding.len(), recovered.len());
         for (a, b) in embedding.iter().zip(recovered.iter()) {
             assert!((a - b).abs() < f32::EPSILON);
@@ -642,7 +638,11 @@ mod tests {
     #[tokio::test]
     async fn test_open_in_memory() {
         let result = SqliteVecStore::open_in_memory().await;
-        assert!(result.is_ok(), "Failed to open in-memory store: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Failed to open in-memory store: {:?}",
+            result.err()
+        );
     }
 
     #[tokio::test]
@@ -653,7 +653,10 @@ mod tests {
         let ctx = LearningContext::new("Test content for storage", AgentDomain::Infrastructure)
             .with_importance(0.8);
 
-        store.store_experience("test-key", ctx.clone()).await.unwrap();
+        store
+            .store_experience("test-key", ctx.clone())
+            .await
+            .unwrap();
 
         let retrieved = store.get_experience("test-key").await.unwrap();
         assert!(retrieved.is_some());
@@ -682,7 +685,10 @@ mod tests {
         store.store_experience("key2", ctx2).await.unwrap();
 
         // Retrieve should find related content
-        let results = store.retrieve_context("nginx memory", 5, None).await.unwrap();
+        let results = store
+            .retrieve_context("nginx memory", 5, None)
+            .await
+            .unwrap();
         assert!(!results.is_empty());
     }
 
@@ -733,12 +739,15 @@ mod tests {
 
         for i in 0..5 {
             let ctx = LearningContext::new(format!("Content {i}"), AgentDomain::General);
-            store.store_experience(&format!("key-{i}"), ctx).await.unwrap();
+            store
+                .store_experience(&format!("key-{i}"), ctx)
+                .await
+                .unwrap();
         }
 
         let keys = store.get_all_keys().await.unwrap();
         assert_eq!(keys.len(), 5);
-        
+
         for i in 0..5 {
             assert!(keys.contains(&format!("key-{i}")));
         }
@@ -751,7 +760,10 @@ mod tests {
 
         for i in 0..3 {
             let ctx = LearningContext::new(format!("Content {i}"), AgentDomain::General);
-            store.store_experience(&format!("key-{i}"), ctx).await.unwrap();
+            store
+                .store_experience(&format!("key-{i}"), ctx)
+                .await
+                .unwrap();
         }
 
         assert_eq!(store.count().await.unwrap(), 3);
@@ -802,11 +814,14 @@ mod tests {
         let ctx = LearningContext::new("Test with metadata", AgentDomain::General)
             .with_metadata(metadata);
 
-        store.store_experience("meta-key", ctx.clone()).await.unwrap();
+        store
+            .store_experience("meta-key", ctx.clone())
+            .await
+            .unwrap();
 
         let retrieved = store.get_experience("meta-key").await.unwrap().unwrap();
         assert!(retrieved.metadata.is_some());
-        
+
         let meta = retrieved.metadata.unwrap();
         assert_eq!(meta.get("source"), Some(&"test".to_string()));
         assert_eq!(meta.get("version"), Some(&"1.0".to_string()));

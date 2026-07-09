@@ -1,9 +1,6 @@
 //! Storage backend tests.
 
-use memory_gate_rs::{
-    storage::InMemoryStore,
-    AgentDomain, KnowledgeStore, LearningContext,
-};
+use memory_gate_rs::{storage::InMemoryStore, AgentDomain, KnowledgeStore, LearningContext};
 
 #[tokio::test]
 async fn test_in_memory_store_crud() {
@@ -20,7 +17,10 @@ async fn test_in_memory_store_crud() {
 
     // Update (overwrite)
     let updated = LearningContext::new("Updated content", AgentDomain::Infrastructure);
-    store.store_experience("key1", updated.clone()).await.unwrap();
+    store
+        .store_experience("key1", updated.clone())
+        .await
+        .unwrap();
     let retrieved = store.get_experience("key1").await.unwrap();
     assert_eq!(retrieved.unwrap().content, "Updated content");
 
@@ -36,8 +36,18 @@ async fn test_in_memory_store_retrieval() {
 
     // Add various memories
     let memories = vec![
-        ("k1", "nginx server restart", AgentDomain::Infrastructure, 0.9),
-        ("k2", "apache configuration", AgentDomain::Infrastructure, 0.7),
+        (
+            "k1",
+            "nginx server restart",
+            AgentDomain::Infrastructure,
+            0.9,
+        ),
+        (
+            "k2",
+            "apache configuration",
+            AgentDomain::Infrastructure,
+            0.7,
+        ),
         ("k3", "kubectl deployment", AgentDomain::Deployment, 0.8),
         ("k4", "code review feedback", AgentDomain::CodeReview, 0.6),
     ];
@@ -97,7 +107,10 @@ async fn test_in_memory_store_limit() {
 
     for i in 0..100 {
         let ctx = LearningContext::new(format!("Memory item {i}"), AgentDomain::General);
-        store.store_experience(&format!("key{i}"), ctx).await.unwrap();
+        store
+            .store_experience(&format!("key{i}"), ctx)
+            .await
+            .unwrap();
     }
 
     // Test various limits
@@ -138,7 +151,10 @@ async fn test_in_memory_store_count_and_clear() {
 
     for i in 0..10 {
         let ctx = LearningContext::new(format!("Memory {i}"), AgentDomain::General);
-        store.store_experience(&format!("key{i}"), ctx).await.unwrap();
+        store
+            .store_experience(&format!("key{i}"), ctx)
+            .await
+            .unwrap();
     }
 
     assert_eq!(store.count().await.unwrap(), 10);
@@ -162,7 +178,10 @@ async fn test_in_memory_store_concurrent_access() {
         let handle = tokio::spawn(async move {
             for j in 0..10 {
                 let ctx = LearningContext::new(format!("Content {i}-{j}"), AgentDomain::General);
-                store.store_experience(&format!("key-{i}-{j}"), ctx).await.unwrap();
+                store
+                    .store_experience(&format!("key-{i}-{j}"), ctx)
+                    .await
+                    .unwrap();
             }
         });
         handles.push(handle);

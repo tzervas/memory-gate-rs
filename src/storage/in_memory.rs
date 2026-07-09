@@ -54,8 +54,6 @@ impl InMemoryStore {
             data: Arc::new(RwLock::new(HashMap::with_capacity(capacity))),
         }
     }
-
-
 }
 
 #[async_trait]
@@ -103,7 +101,11 @@ impl KnowledgeStore<LearningContext> for InMemoryStore {
         results.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
         // Take up to limit
-        Ok(results.into_iter().take(limit).map(|(_, ctx)| ctx).collect())
+        Ok(results
+            .into_iter()
+            .take(limit)
+            .map(|(_, ctx)| ctx)
+            .collect())
     }
 
     async fn delete_experience(&self, key: &str) -> Result<()> {

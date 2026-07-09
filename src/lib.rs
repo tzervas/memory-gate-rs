@@ -17,7 +17,7 @@
 //! - **Domain Isolation**: Multi-domain deployments filter memories by domain,
 //!   preventing cross-contamination between different agent responsibilities.
 //!
-//! M1 (mint): domains extended for tero L1 + context-mcp + gate integration (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + layer: / lang: / repo: parse). Facade via domain-scoped queries (see README).
+//! M1 (mint): domains extended for tero L1 + context-mcp + gate integration (Workspace, Tero, Context, `MemoryGate`, `LangRust`, `LangPython` + layer: / lang: / repo: parse). Facade via domain-scoped queries (see README).
 //!
 //! ## Architecture Rationale
 //!

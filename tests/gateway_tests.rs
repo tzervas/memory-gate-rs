@@ -1,9 +1,8 @@
 //! Integration tests for the memory gateway.
 
 use memory_gate_rs::{
-    adapters::PassthroughAdapter,
-    storage::InMemoryStore,
-    AgentDomain, GatewayConfig, LearningContext, MemoryGateway,
+    adapters::PassthroughAdapter, storage::InMemoryStore, AgentDomain, GatewayConfig,
+    LearningContext, MemoryGateway,
 };
 
 fn create_gateway() -> MemoryGateway<PassthroughAdapter, InMemoryStore> {
@@ -21,9 +20,15 @@ async fn test_full_learning_cycle() {
     // Store multiple learning contexts across domains
     let contexts = vec![
         LearningContext::new("nginx restart fixes high CPU", AgentDomain::Infrastructure),
-        LearningContext::new("kubectl rollout restart deployment", AgentDomain::Deployment),
+        LearningContext::new(
+            "kubectl rollout restart deployment",
+            AgentDomain::Deployment,
+        ),
         LearningContext::new("Code review found SQL injection", AgentDomain::CodeReview),
-        LearningContext::new("PagerDuty incident resolved via restart", AgentDomain::IncidentResponse),
+        LearningContext::new(
+            "PagerDuty incident resolved via restart",
+            AgentDomain::IncidentResponse,
+        ),
     ];
 
     for ctx in contexts {
@@ -33,7 +38,10 @@ async fn test_full_learning_cycle() {
     assert_eq!(gateway.count().await.unwrap(), 4);
 
     // Query across all domains
-    let all_results = gateway.retrieve_context("restart", None, None).await.unwrap();
+    let all_results = gateway
+        .retrieve_context("restart", None, None)
+        .await
+        .unwrap();
     assert!(all_results.len() >= 2); // nginx and kubectl both contain "restart"
 
     // Query with domain filter
@@ -51,13 +59,22 @@ async fn test_feedback_affects_importance() {
 
     // Learn with positive feedback
     let ctx1 = LearningContext::new("Good solution", AgentDomain::General).with_importance(0.5);
-    gateway.learn_from_interaction(ctx1, Some(1.0)).await.unwrap();
+    gateway
+        .learn_from_interaction(ctx1, Some(1.0))
+        .await
+        .unwrap();
 
     // Learn with negative feedback
     let ctx2 = LearningContext::new("Bad solution", AgentDomain::General).with_importance(0.5);
-    gateway.learn_from_interaction(ctx2, Some(0.0)).await.unwrap();
+    gateway
+        .learn_from_interaction(ctx2, Some(0.0))
+        .await
+        .unwrap();
 
-    let results = gateway.retrieve_context("solution", None, None).await.unwrap();
+    let results = gateway
+        .retrieve_context("solution", None, None)
+        .await
+        .unwrap();
     assert_eq!(results.len(), 2);
 
     // Good solution should have higher importance and come first
@@ -78,11 +95,17 @@ async fn test_retrieval_limit() {
     }
 
     // Default limit
-    let results = gateway.retrieve_context("memory", None, None).await.unwrap();
+    let results = gateway
+        .retrieve_context("memory", None, None)
+        .await
+        .unwrap();
     assert_eq!(results.len(), 10); // Default limit is 10
 
     // Custom limit
-    let results = gateway.retrieve_context("memory", Some(5), None).await.unwrap();
+    let results = gateway
+        .retrieve_context("memory", Some(5), None)
+        .await
+        .unwrap();
     assert_eq!(results.len(), 5);
 }
 

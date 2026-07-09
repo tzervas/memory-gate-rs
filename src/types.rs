@@ -264,7 +264,9 @@ impl std::str::FromStr for AgentDomain {
             "context" | "layer:context" | "context-mcp" | "rag" => Ok(Self::Context),
             "memory_gate" | "memory-gate" | "gate" | "layer:gate" => Ok(Self::MemoryGate),
             "lang_rust" | "lang:rust" | "rust" | "rust-1.96" => Ok(Self::LangRust),
-            "lang_python" | "lang:python" | "python" | "python-3.13" | "python-3.14" => Ok(Self::LangPython),
+            "lang_python" | "lang:python" | "python" | "python-3.13" | "python-3.14" => {
+                Ok(Self::LangPython)
+            }
             _ => {
                 // Support "layer:xxx", "repo:xxx", "lang:xxx" prefixes for unified facade (M1)
                 if let Some(rest) = s.strip_prefix("layer:") {
@@ -282,7 +284,7 @@ impl std::str::FromStr for AgentDomain {
                     if norm.starts_with("python") || norm == "py" {
                         return Ok(Self::LangPython);
                     }
-                    return Self::from_str(&format!("lang_{}", norm));
+                    return Self::from_str(&format!("lang_{norm}"));
                 }
                 Err(format!("unknown domain: {s}"))
             }
@@ -432,7 +434,10 @@ mod tests {
             .with_meta("key", "value");
 
         assert!((ctx.importance - 0.5).abs() < f32::EPSILON);
-        assert_eq!(ctx.metadata.as_ref().unwrap().get("key"), Some(&"value".to_string()));
+        assert_eq!(
+            ctx.metadata.as_ref().unwrap().get("key"),
+            Some(&"value".to_string())
+        );
     }
 
     #[test]
@@ -446,23 +451,56 @@ mod tests {
 
     #[test]
     fn test_agent_domain_parsing() {
-        assert_eq!("infrastructure".parse::<AgentDomain>().unwrap(), AgentDomain::Infrastructure);
-        assert_eq!("code_review".parse::<AgentDomain>().unwrap(), AgentDomain::CodeReview);
-        assert_eq!("CodeReview".parse::<AgentDomain>().unwrap(), AgentDomain::CodeReview);
+        assert_eq!(
+            "infrastructure".parse::<AgentDomain>().unwrap(),
+            AgentDomain::Infrastructure
+        );
+        assert_eq!(
+            "code_review".parse::<AgentDomain>().unwrap(),
+            AgentDomain::CodeReview
+        );
+        assert_eq!(
+            "CodeReview".parse::<AgentDomain>().unwrap(),
+            AgentDomain::CodeReview
+        );
         assert!("unknown".parse::<AgentDomain>().is_err());
 
         // M1 tests (tests-first for domain design)
         assert_eq!("tero".parse::<AgentDomain>().unwrap(), AgentDomain::Tero);
-        assert_eq!("layer:tero".parse::<AgentDomain>().unwrap(), AgentDomain::Tero);
-        assert_eq!("context".parse::<AgentDomain>().unwrap(), AgentDomain::Context);
-        assert_eq!("layer:context-mcp".parse::<AgentDomain>().unwrap(), AgentDomain::Context);
-        assert_eq!("gate".parse::<AgentDomain>().unwrap(), AgentDomain::MemoryGate);
-        assert_eq!("lang:rust".parse::<AgentDomain>().unwrap(), AgentDomain::LangRust);
-        assert_eq!("lang:python-3.14".parse::<AgentDomain>().unwrap(), AgentDomain::LangPython);
-        assert_eq!("workspace".parse::<AgentDomain>().unwrap(), AgentDomain::Workspace);
-        assert_eq!("repo:memory-gate-rs".parse::<AgentDomain>().unwrap(), AgentDomain::Workspace);
+        assert_eq!(
+            "layer:tero".parse::<AgentDomain>().unwrap(),
+            AgentDomain::Tero
+        );
+        assert_eq!(
+            "context".parse::<AgentDomain>().unwrap(),
+            AgentDomain::Context
+        );
+        assert_eq!(
+            "layer:context-mcp".parse::<AgentDomain>().unwrap(),
+            AgentDomain::Context
+        );
+        assert_eq!(
+            "gate".parse::<AgentDomain>().unwrap(),
+            AgentDomain::MemoryGate
+        );
+        assert_eq!(
+            "lang:rust".parse::<AgentDomain>().unwrap(),
+            AgentDomain::LangRust
+        );
+        assert_eq!(
+            "lang:python-3.14".parse::<AgentDomain>().unwrap(),
+            AgentDomain::LangPython
+        );
+        assert_eq!(
+            "workspace".parse::<AgentDomain>().unwrap(),
+            AgentDomain::Workspace
+        );
+        assert_eq!(
+            "repo:memory-gate-rs".parse::<AgentDomain>().unwrap(),
+            AgentDomain::Workspace
+        );
         assert_eq!(AgentDomain::LangRust.as_str(), "lang_rust");
-        assert!(AgentDomain::all().iter().any(|d| *d == AgentDomain::Tero));
+        assert!(AgentDomain::all().contains(&AgentDomain::Tero));
     }
 
     #[test]

@@ -2,8 +2,8 @@
 //!
 //! Implements the fundamental data structure for VSA computations.
 
-use std::ops::{Add, Mul, Neg};
 use std::fmt;
+use std::ops::{Add, Mul, Neg};
 
 /// Polarity mode for vector encoding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -60,17 +60,17 @@ impl HolographicVector {
     pub fn random_bipolar(dimensions: usize) -> Self {
         use std::collections::hash_map::RandomState;
         use std::hash::{BuildHasher, Hasher};
-        
+
         let state = RandomState::new();
         let mut data = Vec::with_capacity(dimensions);
-        
+
         for i in 0..dimensions {
             let mut hasher = state.build_hasher();
             hasher.write_usize(i);
             let hash = hasher.finish();
             data.push(if hash & 1 == 0 { 1.0 } else { -1.0 });
         }
-        
+
         Self {
             data,
             polarity: Polarity::Bipolar,
@@ -84,14 +84,14 @@ impl HolographicVector {
         // Simple xorshift PRNG for reproducibility
         let mut state = seed;
         let mut data = Vec::with_capacity(dimensions);
-        
+
         for _ in 0..dimensions {
             state ^= state << 13;
             state ^= state >> 7;
             state ^= state << 17;
             data.push(if state & 1 == 0 { 1.0 } else { -1.0 });
         }
-        
+
         Self {
             data,
             polarity: Polarity::Bipolar,
@@ -182,19 +182,21 @@ impl HolographicVector {
     #[must_use]
     pub fn cosine_similarity(&self, other: &Self) -> f32 {
         assert_eq!(self.data.len(), other.data.len(), "Dimension mismatch");
-        
-        let dot: f32 = self.data.iter()
+
+        let dot: f32 = self
+            .data
+            .iter()
             .zip(other.data.iter())
             .map(|(a, b)| a * b)
             .sum();
-        
+
         let mag_self = self.magnitude();
         let mag_other = other.magnitude();
-        
+
         if mag_self < f32::EPSILON || mag_other < f32::EPSILON {
             return 0.0;
         }
-        
+
         (dot / (mag_self * mag_other)).clamp(-1.0, 1.0)
     }
 
@@ -202,7 +204,8 @@ impl HolographicVector {
     #[must_use]
     pub fn dot(&self, other: &Self) -> f32 {
         assert_eq!(self.data.len(), other.data.len(), "Dimension mismatch");
-        self.data.iter()
+        self.data
+            .iter()
             .zip(other.data.iter())
             .map(|(a, b)| a * b)
             .sum()
@@ -212,7 +215,8 @@ impl HolographicVector {
     #[must_use]
     pub fn hamming_distance(&self, other: &Self) -> usize {
         assert_eq!(self.data.len(), other.data.len(), "Dimension mismatch");
-        self.data.iter()
+        self.data
+            .iter()
             .zip(other.data.iter())
             .filter(|(a, b)| (a.signum() - b.signum()).abs() > f32::EPSILON)
             .count()
@@ -231,12 +235,14 @@ impl HolographicVector {
     #[must_use]
     pub fn bind(&self, other: &Self) -> Self {
         assert_eq!(self.data.len(), other.data.len(), "Dimension mismatch");
-        
-        let data: Vec<f32> = self.data.iter()
+
+        let data: Vec<f32> = self
+            .data
+            .iter()
             .zip(other.data.iter())
             .map(|(a, b)| a * b)
             .collect();
-        
+
         let mut result = Self {
             data,
             polarity: if self.polarity == Polarity::Bipolar && other.polarity == Polarity::Bipolar {
@@ -246,12 +252,12 @@ impl HolographicVector {
             },
             magnitude: None,
         };
-        
+
         // For dense vectors, normalize the result
         if result.polarity == Polarity::Dense {
             result.normalize();
         }
-        
+
         result
     }
 
@@ -267,18 +273,14 @@ impl HolographicVector {
         } else {
             // For dense, use division with small epsilon to prevent div-by-zero
             assert_eq!(self.data.len(), other.data.len(), "Dimension mismatch");
-            
-            let data: Vec<f32> = self.data.iter()
+
+            let data: Vec<f32> = self
+                .data
+                .iter()
                 .zip(other.data.iter())
-                .map(|(a, b)| {
-                    if b.abs() < f32::EPSILON {
-                        *a
-                    } else {
-                        a / b
-                    }
-                })
+                .map(|(a, b)| if b.abs() < f32::EPSILON { *a } else { a / b })
                 .collect();
-            
+
             let mut result = Self {
                 data,
                 polarity: Polarity::Dense,
@@ -305,17 +307,18 @@ impl HolographicVector {
     #[must_use]
     pub fn bundle_weighted(&self, others: &[(&Self, f32)]) -> Self {
         let mut sum = self.data.clone();
-        
+
         for (vec, weight) in others {
             assert_eq!(sum.len(), vec.data.len(), "Dimension mismatch");
             for (s, v) in sum.iter_mut().zip(vec.data.iter()) {
                 *s += v * weight;
             }
         }
-        
+
         // Apply majority vote for bipolar, normalize for dense
-        let polarity = if self.polarity == Polarity::Bipolar 
-            && others.iter().all(|(v, _)| v.polarity == Polarity::Bipolar) {
+        let polarity = if self.polarity == Polarity::Bipolar
+            && others.iter().all(|(v, _)| v.polarity == Polarity::Bipolar)
+        {
             // Majority vote: sign of sum
             for s in &mut sum {
                 *s = s.signum();
@@ -328,17 +331,17 @@ impl HolographicVector {
         } else {
             Polarity::Dense
         };
-        
+
         let mut result = Self {
             data: sum,
             polarity,
             magnitude: None,
         };
-        
+
         if polarity == Polarity::Dense {
             result.normalize();
         }
-        
+
         result
     }
 
@@ -348,12 +351,10 @@ impl HolographicVector {
         if vectors.is_empty() {
             return None;
         }
-        
+
         let first = &vectors[0];
-        let others: Vec<(&Self, f32)> = vectors[1..].iter()
-            .map(|v| (v, 1.0))
-            .collect();
-        
+        let others: Vec<(&Self, f32)> = vectors[1..].iter().map(|v| (v, 1.0)).collect();
+
         Some(first.bundle_weighted(&others))
     }
 
@@ -365,12 +366,12 @@ impl HolographicVector {
     pub fn permute(&self, shifts: i32) -> Self {
         let n = self.data.len();
         let shifts = shifts.rem_euclid(n as i32) as usize;
-        
+
         let mut data = vec![0.0; n];
         for (i, &val) in self.data.iter().enumerate() {
             data[(i + shifts) % n] = val;
         }
-        
+
         Self {
             data,
             polarity: self.polarity,
@@ -387,10 +388,12 @@ impl HolographicVector {
     /// Apply threshold to convert dense vector to bipolar.
     #[must_use]
     pub fn to_bipolar(&self) -> Self {
-        let data: Vec<f32> = self.data.iter()
+        let data: Vec<f32> = self
+            .data
+            .iter()
             .map(|x| if *x >= 0.0 { 1.0 } else { -1.0 })
             .collect();
-        
+
         Self {
             magnitude: Some((data.len() as f32).sqrt()),
             data,
@@ -406,12 +409,13 @@ impl HolographicVector {
         if items.is_empty() {
             return None;
         }
-        
-        let encoded: Vec<Self> = items.iter()
+
+        let encoded: Vec<Self> = items
+            .iter()
             .enumerate()
             .map(|(i, item)| position_base.permute(i as i32).bind(item))
             .collect();
-        
+
         Self::bundle_all(&encoded)
     }
 
@@ -427,7 +431,7 @@ impl HolographicVector {
 
 impl Add for &HolographicVector {
     type Output = HolographicVector;
-    
+
     fn add(self, rhs: Self) -> Self::Output {
         self.bundle(rhs)
     }
@@ -435,7 +439,7 @@ impl Add for &HolographicVector {
 
 impl Mul for &HolographicVector {
     type Output = HolographicVector;
-    
+
     fn mul(self, rhs: Self) -> Self::Output {
         self.bind(rhs)
     }
@@ -443,7 +447,7 @@ impl Mul for &HolographicVector {
 
 impl Neg for &HolographicVector {
     type Output = HolographicVector;
-    
+
     fn neg(self) -> Self::Output {
         HolographicVector {
             data: self.data.iter().map(|x| -x).collect(),
@@ -455,8 +459,7 @@ impl Neg for &HolographicVector {
 
 impl PartialEq for HolographicVector {
     fn eq(&self, other: &Self) -> bool {
-        self.data.len() == other.data.len() 
-            && self.cosine_similarity(other) > 0.999
+        self.data.len() == other.data.len() && self.cosine_similarity(other) > 0.999
     }
 }
 
@@ -470,9 +473,12 @@ mod tests {
         let dim = 10000;
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
         let b = HolographicVector::random_bipolar_seeded(dim, 123);
-        
+
         let sim = a.cosine_similarity(&b);
-        assert!(sim.abs() < 0.1, "Random vectors should be nearly orthogonal, got {sim}");
+        assert!(
+            sim.abs() < 0.1,
+            "Random vectors should be nearly orthogonal, got {sim}"
+        );
     }
 
     #[test]
@@ -480,13 +486,16 @@ mod tests {
         let dim = 1000;
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
         let b = HolographicVector::random_bipolar_seeded(dim, 123);
-        
+
         // bind(bind(a, b), b) should recover a
         let bound = a.bind(&b);
         let recovered = bound.bind(&b);
-        
+
         let sim = a.cosine_similarity(&recovered);
-        assert!(sim > 0.99, "Bind should be self-inverse for bipolar, got {sim}");
+        assert!(
+            sim > 0.99,
+            "Bind should be self-inverse for bipolar, got {sim}"
+        );
     }
 
     #[test]
@@ -494,9 +503,9 @@ mod tests {
         let dim = 1000;
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
         let b = HolographicVector::random_bipolar_seeded(dim, 123);
-        
+
         let bound = a.bind(&b);
-        
+
         // Bound result should be dissimilar to both inputs
         assert!(a.cosine_similarity(&bound).abs() < 0.2);
         assert!(b.cosine_similarity(&bound).abs() < 0.2);
@@ -507,23 +516,29 @@ mod tests {
         let dim = 1000;
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
         let b = HolographicVector::random_bipolar_seeded(dim, 123);
-        
+
         let bundled = a.bundle(&b);
-        
+
         // Bundled result should be somewhat similar to both inputs
         // For bipolar with majority vote, similarity is typically ~0.5 (half agree)
-        assert!(a.cosine_similarity(&bundled) > 0.4, "Bundle should be similar to a");
-        assert!(b.cosine_similarity(&bundled) > 0.4, "Bundle should be similar to b");
+        assert!(
+            a.cosine_similarity(&bundled) > 0.4,
+            "Bundle should be similar to a"
+        );
+        assert!(
+            b.cosine_similarity(&bundled) > 0.4,
+            "Bundle should be similar to b"
+        );
     }
 
     #[test]
     fn test_permute_inverse() {
         let dim = 1000;
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
-        
+
         let shifted = a.permute(5);
         let recovered = shifted.inverse_permute(5);
-        
+
         let sim = a.cosine_similarity(&recovered);
         assert!(sim > 0.99, "Permute should be invertible, got {sim}");
     }
@@ -532,35 +547,42 @@ mod tests {
     fn test_permute_quasi_orthogonal() {
         let dim = 1000;
         let a = HolographicVector::random_bipolar_seeded(dim, 42);
-        
+
         let shifted = a.permute(100);
         let sim = a.cosine_similarity(&shifted);
-        
+
         // Different permutations should be quasi-orthogonal
-        assert!(sim.abs() < 0.2, "Permuted vectors should be quasi-orthogonal, got {sim}");
+        assert!(
+            sim.abs() < 0.2,
+            "Permuted vectors should be quasi-orthogonal, got {sim}"
+        );
     }
 
     #[test]
     fn test_sequence_encoding() {
         let dim = 10000;
         let pos_base = HolographicVector::random_bipolar_seeded(dim, 999);
-        
+
         let items: Vec<HolographicVector> = (0..5)
             .map(|i| HolographicVector::random_bipolar_seeded(dim, i))
             .collect();
-        
+
         let sequence = HolographicVector::encode_sequence(&items, &pos_base).unwrap();
-        
+
         // Decode position 2
         let decoded = sequence.decode_sequence_position(2, &pos_base);
-        
+
         // Should be most similar to items[2]
-        let mut similarities: Vec<(usize, f32)> = items.iter()
+        let mut similarities: Vec<(usize, f32)> = items
+            .iter()
             .enumerate()
             .map(|(i, item)| (i, decoded.cosine_similarity(item)))
             .collect();
         similarities.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-        
-        assert_eq!(similarities[0].0, 2, "Decoded should be most similar to original item");
+
+        assert_eq!(
+            similarities[0].0, 2,
+            "Decoded should be most similar to original item"
+        );
     }
 }

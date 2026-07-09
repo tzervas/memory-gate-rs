@@ -194,9 +194,7 @@ impl QdrantStore {
                         .quantization_config(ScalarQuantizationBuilder::default()),
                 )
                 .await
-                .map_err(|e| {
-                    StorageError::backend(format!("Failed to create collection: {e}"))
-                })?;
+                .map_err(|e| StorageError::backend(format!("Failed to create collection: {e}")))?;
         }
 
         Ok(())
@@ -619,7 +617,9 @@ mod tests {
     fn test_timestamp_roundtrip() {
         use chrono::TimeZone;
 
-        let timestamp = chrono::Utc.with_ymd_and_hms(2024, 6, 15, 12, 30, 45).unwrap();
+        let timestamp = chrono::Utc
+            .with_ymd_and_hms(2024, 6, 15, 12, 30, 45)
+            .unwrap();
         let ctx = LearningContext::new("test", AgentDomain::General).with_timestamp(timestamp);
 
         let payload = QdrantStore::context_to_payload("key", &ctx).unwrap();
@@ -696,7 +696,11 @@ mod tests {
 
         // Search with domain filter
         let results = store
-            .retrieve_context("management practices", 10, Some(AgentDomain::Infrastructure))
+            .retrieve_context(
+                "management practices",
+                10,
+                Some(AgentDomain::Infrastructure),
+            )
             .await
             .unwrap();
 

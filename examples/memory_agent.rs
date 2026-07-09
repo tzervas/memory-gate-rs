@@ -3,10 +3,8 @@
 //! Run with: cargo run --example memory_agent
 
 use memory_gate_rs::{
-    adapters::PassthroughAdapter,
-    agents::BaseMemoryAgent,
-    storage::InMemoryStore,
-    AgentDomain, GatewayConfig, MemoryGateway, Result,
+    adapters::PassthroughAdapter, agents::BaseMemoryAgent, storage::InMemoryStore, AgentDomain,
+    GatewayConfig, MemoryGateway, Result,
 };
 
 #[tokio::main]
