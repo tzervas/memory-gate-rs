@@ -38,6 +38,30 @@ See dev-workflow in workspace docs, guards, wsfull-wave-2026-07-09-compact.md, W
 
 ---
 
+## W2 Facade Evolution (chore/w2-rollout-docs-wiring)
+
+Append-only extension per plan.md w2-rollout (parallel safe to cabal MVP).
+
+- Facade evolution: keep thin; evolve toward CommonMemory mirror (trait stub if fits; see dev-docs/schemas/common_memory_facade.rs.example).
+- Simple CommonMemory mirror stub (Rust sketch, for future facade.rs or in types/docs; mirrors cabal CommonMemoryAdapter + Py):
+  ```rust
+  // stub (not full impl yet; domain-scoped via existing AgentDomain)
+  use crate::types::AgentDomain;
+  // use super::structured::StructuredResponse; // when added
+  pub trait CommonMemory {
+      fn query(&self, domain: AgentDomain, q: &str, opts: Option<serde_json::Value>)
+          -> /* StructuredResponse */ String;  // placeholder: returns cited resp
+      fn store(&self, domain: AgentDomain, content: &str, meta: Option<serde_json::Value>) -> String;
+      fn supported_domains(&self) -> Vec<AgentDomain>;
+  }
+  // Wire via domain filters on retrieve_context (M1) + tero L1; see cabal facade for contract.
+  ```
+- Cross: cabal-devmelopner (schemas.py AgentDomain/CommonMemoryAdapter) is Py mirror of M1 here (types.rs). Context-mcp session as W2 consumer. Dev-mcp servers/ docs updated w/ cabal facade ex.
+- Tero cites: plan.md:44 (W2 rollout), wsfull-wave-2026-07-09-compact.md, memory types.rs M1 (AgentDomain Tero/Context etc), dev-docs/schemas/.
+
+Next M2: full CommonMemory impl + store wiring.
+---
+
 ## Links
 
 - AGENTS.md (Tero rule, local checks, PR flow)
