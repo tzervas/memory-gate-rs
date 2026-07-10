@@ -96,11 +96,4 @@ Refs: plan.md:44, wsfull-wave-2026-07-09-compact.md:30, dev-docs/schemas/* .
 
 Append-only, tero-first, branch-guard followed.
 
-
-## Semver + Releases (2026-07-10 appended)
-Semver baseline for this supportive tooling/helper extracted from mycelium (read-only clone at /root/git/isolated/mycelium, perms 555).
-Easily ported universal implementation.
-Baseline v1.0.1.
-Process: local build, hygiene, tero cites, plan.md, local podman GHCR pref (no Actions).
-No mods to mycelium core.
-Cites: plan.md, user extraction rules (tooling only, read-only clone).
+(Note: the short semver baseline paragraph above was erroneously appended to this w2 feature branch by the parallel baseline automation loop. The proper semver baseline lives on the dedicated chore/semver-baseline-v1.0.1 branch per the tranche.)

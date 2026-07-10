@@ -295,6 +295,4 @@ MIT License - see [LICENSE-MIT](LICENSE-MIT)
 ## Contributing
 
 Contributions welcome! Please read CONTRIBUTING.md first.
-## Semver baseline (2026-07-10)
-v1.0.1 for memory-gate-rs (supportive tooling from mycelium read-only).
-See AGENTS.md.
+
