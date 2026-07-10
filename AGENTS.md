@@ -79,3 +79,11 @@ Per plan.md w2-rollout + dev-docs/schemas/ (read: W2-STRUCTURED-SCHEMAS.md, comm
 
 Refs: plan.md:44, wsfull-wave-2026-07-09-compact.md:30, dev-docs/schemas/* .
 
+## W2 code wiring (chore/w2-code-wiring-facade)
+- CommonMemory trait landed in src/traits.rs (pub via lib/prelude); compiles (cargo check).
+- Code beyond docs: actual trait def mirroring cabal for W2 contract (domain query/store); thin v0.
+- Updated ROADMAP with status. Will enable impls in gateway/adapters for real W2 consumers.
+- Tero-first + append-only + hygiene gate + tero regen post. Per plan w2-rollout tranche.
+- Cites: plan.md, memory ROADMAP prior, cabal schemas, dev-mcp W2 matrix.
+
+
