@@ -138,8 +138,8 @@ pub mod vsa;
 pub use error::{Error, Result, StorageError};
 pub use gateway::MemoryGateway;
 pub use traits::{
-    BatchKnowledgeStore, FilterableStore, KnowledgeStore, MemoryAdapter, MemoryEnabledAgent,
-    TaskResult, VectorStore,
+    BatchKnowledgeStore, CommonMemory, FilterableStore, KnowledgeStore, MemoryAdapter,
+    MemoryEnabledAgent, TaskResult, VectorStore,
 };
 pub use types::{AgentDomain, ConsolidationStats, GatewayConfig, LearningContext};
 
@@ -154,7 +154,7 @@ pub mod prelude {
     pub use crate::error::{Error, Result};
     pub use crate::gateway::MemoryGateway;
     pub use crate::storage::InMemoryStore;
-    pub use crate::traits::{KnowledgeStore, MemoryAdapter, MemoryEnabledAgent};
+    pub use crate::traits::{CommonMemory, KnowledgeStore, MemoryAdapter, MemoryEnabledAgent};
     pub use crate::types::{AgentDomain, GatewayConfig, LearningContext};
     pub use crate::vsa::{HolographicStore, HolographicVector, VsaCodebook};
 }

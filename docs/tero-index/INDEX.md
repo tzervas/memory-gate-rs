@@ -1,15 +1,15 @@
 # memory-gate-rs — Tero Index (Layer 1)
 
-> **Honesty:** Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.
+> **Honesty:** Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-10.
 > Use this index to find where to Read, not as authoritative ground truth.
 
-- **Items:** 77
+- **Items:** 79
 - **Flagged:** 0
 - **item_tag:** `Empirical/Declared`
 - **Machine index:** [`index.json`](./index.json)
 - **Manifest:** [`MANIFEST.toml`](./MANIFEST.toml)
 
-## doc (61 entries)
+## doc (63 entries)
 
 | Anchor | Kind | Id | Title | File:Line | Status | Summary |
 |---|---|---|---|---|---|---|
@@ -22,6 +22,7 @@
 | `agents--latest-m1-w2-facade-2026-07-09-pr-26` | section | — | Latest (M1 + W2 Facade, 2026-07-09 PR #26) | `AGENTS.md:57` | — | M1 domains + facade executed on feature/mint-m1-domain-facade. AgentDomain extended (Workspace, Tero, Context, MemoryGate, LangRust, LangPython + prefix-aware… |
 | `agents--post-26-merge-propagate-2026-07-09` | section | — | Post #26 merge + propagate (2026-07-09) | `AGENTS.md:62` | — | - Merged to dev @4fb2c40 (PR#26 feature/mint-m1-domain-facade). pr-review (adapted M1/tero/W2) + gh verification comment posted. |
 | `agents--w2-facade-evolution-commonmemory-mirror-stub-chore-w2-rollout-docs-wiring` | section | — | W2 Facade Evolution + CommonMemory Mirror Stub (chore/w2-rollout-docs-wiring) | `AGENTS.md:69` | — | Per plan.md w2-rollout + dev-docs/schemas/ (read: W2-STRUCTURED-SCHEMAS.md, commonmemoryfacade.rs.example, cabal schemas/agent current impl, memory types.rs M1… |
+| `agents--w2-code-wiring-chore-w2-code-wiring-facade` | section | — | W2 code wiring (chore/w2-code-wiring-facade) | `AGENTS.md:82` | — | - CommonMemory trait landed in src/traits.rs (pub via lib/prelude); compiles (cargo check). |
 | `contributing` | section | — | Contributing to memory-gate-rs | `CONTRIBUTING.md:1` | — | Thank you for your interest in contributing to memory-gate-rs! This document provides |
 | `contributing--code-of-conduct` | section | — | Code of Conduct | `CONTRIBUTING.md:6` | — | This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). |
 | `contributing--getting-started` | section | — | Getting Started | `CONTRIBUTING.md:11` | — | - Rust 1.92 or later (check with rustc --version) |
@@ -73,7 +74,8 @@
 | `roadmap--m2-pending` | section | — | M2 — (pending) | `docs/ROADMAP.md:22` | — | - TBD per cabal / wsfull waves and mint kickoffs. |
 | `roadmap--hygiene-tero-facade-evolution` | section | — | Hygiene, Tero, Facade Evolution | `docs/ROADMAP.md:28` | — | - Add scripts/check.sh (fmt --check/fix, clippy -D warnings, doc -D warnings, build, test --all-features) per AGENTS local checks expectation. |
 | `roadmap--w2-facade-evolution-chore-w2-rollout-docs-wiring` | section | — | W2 Facade Evolution (chore/w2-rollout-docs-wiring) | `docs/ROADMAP.md:41` | — | Append-only extension per plan.md w2-rollout (parallel safe to cabal MVP). |
-| `roadmap--links` | section | — | Links | `docs/ROADMAP.md:65` | — | - AGENTS.md (Tero rule, local checks, PR flow) |
+| `roadmap--w2-code-wiring-chore-w2-code-wiring-facade-appended` | section | — | W2 code wiring (chore/w2-code-wiring-facade appended) | `docs/ROADMAP.md:64` | — | - CommonMemory trait (W2 mirror) implemented in src/traits.rs (pub, reexported in lib + prelude). |
+| `roadmap--links` | section | — | Links | `docs/ROADMAP.md:75` | — | - AGENTS.md (Tero rule, local checks, PR flow) |
 
 ## changelog (16 entries)
 

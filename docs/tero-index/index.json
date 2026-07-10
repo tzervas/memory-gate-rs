@@ -1,5 +1,5 @@
 {
-  "generated": "Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-09.",
+  "generated": "Empirical/Declared — lite heading/line heuristic over markdown in memory-gate-rs via tero-mcp/scripts/generate_lite_index.py; source files are ground truth. Generated 2026-07-10.",
   "item_tag": "Empirical/Declared",
   "siblings": [],
   "items": [
@@ -92,6 +92,16 @@
       "line": 69,
       "tag": "Empirical/Declared",
       "summary": "Per plan.md w2-rollout + dev-docs/schemas/ (read: W2-STRUCTURED-SCHEMAS.md, commonmemoryfacade.rs.example, cabal schemas/agent current impl, memory types.rs M1…"
+    },
+    {
+      "anchor": "agents--w2-code-wiring-chore-w2-code-wiring-facade",
+      "family": "doc",
+      "kind": "section",
+      "title": "W2 code wiring (chore/w2-code-wiring-facade)",
+      "file": "AGENTS.md",
+      "line": 82,
+      "tag": "Empirical/Declared",
+      "summary": "- CommonMemory trait landed in src/traits.rs (pub via lib/prelude); compiles (cargo check)."
     },
     {
       "anchor": "contributing",
@@ -604,12 +614,22 @@
       "summary": "Append-only extension per plan.md w2-rollout (parallel safe to cabal MVP)."
     },
     {
+      "anchor": "roadmap--w2-code-wiring-chore-w2-code-wiring-facade-appended",
+      "family": "doc",
+      "kind": "section",
+      "title": "W2 code wiring (chore/w2-code-wiring-facade appended)",
+      "file": "docs/ROADMAP.md",
+      "line": 64,
+      "tag": "Empirical/Declared",
+      "summary": "- CommonMemory trait (W2 mirror) implemented in src/traits.rs (pub, reexported in lib + prelude)."
+    },
+    {
       "anchor": "roadmap--links",
       "family": "doc",
       "kind": "section",
       "title": "Links",
       "file": "docs/ROADMAP.md",
-      "line": 65,
+      "line": 75,
       "tag": "Empirical/Declared",
       "summary": "- AGENTS.md (Tero rule, local checks, PR flow)"
     },

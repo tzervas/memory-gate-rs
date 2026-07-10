@@ -60,6 +60,16 @@ Append-only extension per plan.md w2-rollout (parallel safe to cabal MVP).
 - Tero cites: plan.md:44 (W2 rollout), wsfull-wave-2026-07-09-compact.md, memory types.rs M1 (AgentDomain Tero/Context etc), dev-docs/schemas/.
 
 Next M2: full CommonMemory impl + store wiring.
+
+## W2 code wiring (chore/w2-code-wiring-facade appended)
+- CommonMemory trait (W2 mirror) implemented in src/traits.rs (pub, reexported in lib + prelude).
+- Compiles (cargo check clean); thin sync contract matching cabal Py (query/store/supported_domains + AgentDomain).
+- Integrates M1 domains; placeholder for StructuredResponse (per dev-docs/schemas + cabal schemas.py).
+- Tero-first, hygiene (will run check.sh), append-only docs, branch-guard.
+- Cross-cites: plan.md w2-rollout (code beyond docs), memory AGENTS/ROADMAP prior stub, cabal facade, wsfull compact.
+- Status: code wiring started (trait surface); consumers (gateway/adapters) can impl; full later.
+- Verify: cargo test/check; tero hits post regen; cabal can evolve consume.
+
 ---
 
 ## Links

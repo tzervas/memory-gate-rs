@@ -255,3 +255,26 @@ impl TaskResult {
         self
     }
 }
+
+/// W2 `CommonMemory` facade trait (mirror of cabal `CommonMemoryAdapter` + Structured contract).
+///
+/// Domain-scoped query/store for tero-first cited memory + orch hints (`StructuredResponse` shape).
+/// Thin v0: returns text (or refusal marker); full `StructuredResponse` + `Citation` later (see dev-docs/schemas/).
+/// Enables cross-repo W2 wiring (memory-gate as Rust domain provider; cabal as Py consumer).
+/// Per plan.md w2-rollout (code beyond docs), memory ROADMAP facade evolution, AGENTS M1+stub.
+///
+/// Usage sketch (W2):
+/// ```rust,ignore
+///   let facade: &dyn CommonMemory = ...;
+///   let resp = facade.query(AgentDomain::Tero, "task desc", Some(json!({"limit":5})));
+/// ```
+pub trait CommonMemory: Send + Sync {
+    /// Query domain-scoped, return cited answer or refusal (W2 always-Structured contract).
+    fn query(&self, domain: AgentDomain, query: &str, opts: Option<serde_json::Value>) -> String;
+
+    /// Store into domain (for learning path).
+    fn store(&self, domain: AgentDomain, content: &str, meta: Option<serde_json::Value>) -> String;
+
+    /// List supported `AgentDomain`s (M1 prefixes: `layer:*`, `lang:*`, `repo:*` etc).
+    fn supported_domains(&self) -> Vec<AgentDomain>;
+}
