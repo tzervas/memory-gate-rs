@@ -78,3 +78,11 @@ Next M2: full CommonMemory impl + store wiring.
 - CONTRIBUTING.md (cargo fmt/clippy/test, doc requirements)
 - CHANGELOG.md (M1 entries)
 - tero index: `docs/tero-index/index.json`
+
+## W2 trait impl notes (post-dispatch ghcr, plan continue appended)
+- Trait `CommonMemory` (src/traits.rs) provides the contract.
+- Basic impl sketch ready (DomainMemoryAdapter using AgentDomain filter + stub delegate to retrieve/store).
+- Can be wired into MemoryGateway or as adapter (adapters/ dir). Example usage in cabal or agent-mcp: facade = DomainMemoryAdapter; resp = facade.query(AgentDomain::Tero, task, Some(opts)).
+- For full: impl on gateway that filters by domain, returns structured text for now.
+- Next: concrete impl PR, tests, consume in context-mcp or cabal.
+- Hygiene will cover. Tero cite plan.
