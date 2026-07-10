@@ -86,4 +86,13 @@ Refs: plan.md:44, wsfull-wave-2026-07-09-compact.md:30, dev-docs/schemas/* .
 - Tero-first + append-only + hygiene gate + tero regen post. Per plan w2-rollout tranche.
 - Cites: plan.md, memory ROADMAP prior, cabal schemas, dev-mcp W2 matrix.
 
+## Semver Baseline (chore/semver-baseline-v1.0.1, 2026-07-09)
+- Version bumped Cargo.toml + Cargo.lock to 1.0.1; branch + optional disjoint worktree used.
+- Tero-first scoping: `/root/git/scripts/tero.sh memory-gate-rs text_search version .` (and W2/trait queries) before edits.
+- CHANGELOG updated with [1.0.1] entry citing M1 + W2 CommonMemory, plan.md w2-rollout, local GHCR.
+- Guards followed: chore/ branch (PR to dev), append-only, local builds only, scripts/check.sh hygiene.
+- Signed intent + tero citations throughout; no gh release existed for prior v1.0.0 tag (now establishing at 1.0.1).
+- Cross: plan.md, wsfull wave, cabal-devmelopner W2 schemas; local GHCR (ghcr.io/tzervas/memory-gate-rs) for baseline images.
+- Post: cargo test/build green, tag v1.0.1, gh release, push remotes (incl tag), append private analyses.
+
 

@@ -70,11 +70,18 @@ Next M2: full CommonMemory impl + store wiring.
 - Status: code wiring started (trait surface); consumers (gateway/adapters) can impl; full later.
 - Verify: cargo test/check; tero hits post regen; cabal can evolve consume.
 
+## Semver Baseline (chore/semver-baseline-v1.0.1)
+- Cargo version -> 1.0.1 for baseline after W2 trait work (CommonMemory) + M1.
+- Tero-first enforced (script `/root/git/scripts/tero.sh memory-gate-rs text_search version .` + W2 queries).
+- Notes appended to CHANGELOG/AGENTS/ROADMAP citing plan.md w2-rollout + M1, local GHCR (ghcr.io/tzervas/memory-gate-rs:1.0.1).
+- Hygiene + local build; disjoint worktree optional; tag v1.0.1 + gh release.
+- Per AGENTS guards, append-only, signed intent.
+
 ---
 
 ## Links
 
 - AGENTS.md (Tero rule, local checks, PR flow)
 - CONTRIBUTING.md (cargo fmt/clippy/test, doc requirements)
-- CHANGELOG.md (M1 entries)
+- CHANGELOG.md (M1 + 1.0.1 baseline entries)
 - tero index: `docs/tero-index/index.json`
