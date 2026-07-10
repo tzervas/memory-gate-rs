@@ -154,7 +154,7 @@ pub mod prelude {
     pub use crate::error::{Error, Result};
     pub use crate::gateway::MemoryGateway;
     pub use crate::storage::InMemoryStore;
-    pub use crate::traits::{CommonMemory, KnowledgeStore, MemoryAdapter, MemoryEnabledAgent};
+    pub use crate::traits::{CommonMemory, KnowledgeStore, MemoryAdapter, MemoryEnabledAgent, PassthroughCommonMemory};
     pub use crate::types::{AgentDomain, GatewayConfig, LearningContext};
     pub use crate::vsa::{HolographicStore, HolographicVector, VsaCodebook};
 }

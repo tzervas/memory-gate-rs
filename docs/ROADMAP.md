@@ -19,6 +19,16 @@ M1 domains + facade complete (see below). Companion: [AGENTS.md](AGENTS.md), [CO
 
 **Status:** M1 complete.
 
+### W2 CommonMemory facade (2026-07-10 tranche)
+
+- `CommonMemory` trait defined in `src/traits.rs` (domain-scoped query/store + supported_domains).
+- Initial concrete impl: `PassthroughCommonMemory` (thin, honest markers, no fake citations).
+- Re-exported from crate root.
+- Enables cross wiring (memory-gate as Rust provider → cabal/dev-mcp consumers).
+- See plan.md w2-rollout, AGENTS, and dev-docs schemas for StructuredResponse next.
+
+**Status:** Trait + first impl sketch landed. Ready for adapter/gateway wiring + cross-consume.
+
 ### M2 — (pending)
 
 - TBD per cabal / wsfull waves and mint kickoffs.

@@ -278,3 +278,38 @@ pub trait CommonMemory: Send + Sync {
     /// List supported `AgentDomain`s (M1 prefixes: `layer:*`, `lang:*`, `repo:*` etc).
     fn supported_domains(&self) -> Vec<AgentDomain>;
 }
+
+/// Thin passthrough / no-op implementation of the W2 `CommonMemory` facade.
+///
+/// Provides an early concrete impl for wiring and testing (plan w2-rollout).
+/// Returns honest markers (no fake citations yet). Full `StructuredResponse` +
+/// cross-consume (cabal/context) will layer on top.
+///
+/// Use this as the starting adapter while real stores (InMemoryStore, VSA, etc.)
+/// grow full CommonMemory support.
+#[derive(Debug, Clone, Default)]
+pub struct PassthroughCommonMemory;
+
+impl CommonMemory for PassthroughCommonMemory {
+    fn query(&self, domain: AgentDomain, query: &str, _opts: Option<serde_json::Value>) -> String {
+        // Honest thin v0: echo with domain + refusal-style marker.
+        // Callers (cabal orch, dev-mcp) should treat non-cited content as refusal.
+        format!(
+            "[W2-Passthrough][domain={:?}] query=\"{}\" (no cited result; implement full StructuredResponse + Citation)",
+            domain, query
+        )
+    }
+
+    fn store(&self, domain: AgentDomain, content: &str, _meta: Option<serde_json::Value>) -> String {
+        format!("[W2-Passthrough][domain={:?}] stored len={}", domain, content.len())
+    }
+
+    fn supported_domains(&self) -> Vec<AgentDomain> {
+        // Start with core M1 domains; extend as more are wired.
+        vec![
+            AgentDomain::Tero,
+            AgentDomain::Workspace,
+            AgentDomain::Context,
+        ]
+    }
+}

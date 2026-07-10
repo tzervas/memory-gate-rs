@@ -86,4 +86,14 @@ Refs: plan.md:44, wsfull-wave-2026-07-09-compact.md:30, dev-docs/schemas/* .
 - Tero-first + append-only + hygiene gate + tero regen post. Per plan w2-rollout tranche.
 - Cites: plan.md, memory ROADMAP prior, cabal schemas, dev-mcp W2 matrix.
 
+## W2 impl sketch (chore/w2-commonmemory-impl-sketch, 2026-07-10)
+- Added first concrete impl: `PassthroughCommonMemory` (in traits.rs, re-exported).
+- Thin honest behavior: returns domain-scoped markers (no fabricated citations / Structured yet).
+- Ready for wiring into MemoryGateway / adapters and consumption from cabal (Py) + context + dev-mcp.
+- Branch: chore/w2-commonmemory-impl-sketch. Hygiene + cargo check green. tero regen done.
+- Next per plan: real adapters (e.g. over existing stores), gateway integration, cross consume tests.
+- Local build/hygiene only; will follow semver baseline when landing tranche.
+
+Append-only, tero-first, branch-guard followed.
+
 
