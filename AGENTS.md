@@ -95,4 +95,15 @@ Refs: plan.md:44, wsfull-wave-2026-07-09-compact.md:30, dev-docs/schemas/* .
 - Cross: plan.md, wsfull wave, cabal-devmelopner W2 schemas; local GHCR (ghcr.io/tzervas/memory-gate-rs) for baseline images.
 - Post: cargo test/build green, tag v1.0.1, gh release, push remotes (incl tag), append private analyses.
 
+## Semver + Releases (2026-07-10 appended)
+
+Semver baseline for this supportive tooling/helper extracted from mycelium (read-only clone at /root/git/isolated/mycelium, perms 555).
+Easily ported universal implementation (Rust memory gate).
+Baseline v1.0.1.
+Process: local build, hygiene, tero cites, plan.md, local podman GHCR pref (no Actions).
+No mods to mycelium core.
+Cites: plan.md, user: 'only the tooling that is supportive and easily ported ... rust or python ... clone a copy ... read only to prevent erroneously borking it', tero.
+
+Append-only. Followed branch-guard (worktree), dev-workflow. Hygiene + push done in baseline tranche.
+
 
