@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - M1 domain/facade (mint kickoff)
 
+### Added (docs — Wave C)
+- `docs/WAVE_C_ACCEPTANCE.md` — recall@5 ≤2% drop vs fixture baseline, local `./scripts/check.sh` gate, golden test command with `--ignored`, aspirational warm-retrieve goals clearly non-blocking.
+- `docs/TERO_INTEGRATION.md` — post–Wave C follow-on: tero L1 vs memory-gate-rs roles, suggested flows, `AgentDomain::Tero` / `MemoryGate` scoping; tero-rs and tero-mcp named as next-wave targets (no crate/MCP implementation in Wave C).
+- README links: Accuracy (Wave C) + Integration roadmap.
+
 ### Fixed
 - **Store model binding (`mg/store-model-binding`)**: Qdrant and sqlite-vec backends fail closed on embedding dimension mismatch when reopening a collection/DB; sqlite-vec persists `store_meta` (`embedding_model`, `embedding_dim`) and rejects legacy DBs that already contain rows without metadata. Qdrant stamps collection metadata on create and validates vector size (and model metadata when present). SQLite fallback search errors on stored/query vector length mismatch instead of returning zero similarity.
 
 ### Added
+- Golden recall harness: `tests/fixtures/golden_corpus.json`, `eval::recall_at_k` / `mean_recall`, and ignored `golden_recall` integration test for `sqlite-vec` (`mg/golden-recall@DRAFT`).
 - Batch embedding (`embed_batch`) and `BatchKnowledgeStore::store_batch` on `QdrantStore` and `SqliteVecStore` (single FastEmbed lock per batch).
 - Bounded LRU query embedding cache (256 entries, keyed by query text + model id) on vector backends for `retrieve_context`.
 - Multi-model embedding catalog (`SupportedEmbeddingModel`) for `qdrant` and `sqlite-vec` backends: `all-minilm-l6-v2`, `bge-small-en-v1.5` (default), `bge-base-en-v1.5`; stable IDs aligned with Python `memory-gate` (`mg/embed-catalog@STABLE`).

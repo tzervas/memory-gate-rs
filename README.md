@@ -245,6 +245,24 @@ MEMORY_GATE_SKIP_HEAVY_BENCH=1 cargo bench --bench vector_storage_benchmarks --f
 
 Full embedding benchmark runs are intentionally **not** part of CI (model download + GPU/CPU cost). Use `--no-run` in pipelines and run full benches locally before/after Wave B storage changes.
 
+## Accuracy (Wave C)
+
+Wave C locks **recall@5** on a fixed golden corpus so vector backend and embed/cache changes do not regress semantic retrieval. Acceptance criteria, local gates, and honest treatment of aspirational warm-retrieve goals are in [docs/WAVE_C_ACCEPTANCE.md](docs/WAVE_C_ACCEPTANCE.md).
+
+**Local gate:** `./scripts/check.sh` (required before merge).
+
+**Golden integration test** (after L1-GOLDEN lands; downloads embedding weights):
+
+```bash
+cargo test --features sqlite-vec --test golden_recall -- --ignored --nocapture
+```
+
+Python `memory-gate` is **frozen** for product work; accuracy and golden ownership are **RS-only**.
+
+## Integration roadmap
+
+Post–Wave C, persistent memory is intended to sit behind **tero-rs** (L1 cited index) and **tero-mcp** (tools), using existing `AgentDomain::Tero` / `MemoryGate` scoping — design sketch only, not shipped in Wave C: [docs/TERO_INTEGRATION.md](docs/TERO_INTEGRATION.md).
+
 ## Metrics (feature: `metrics`)
 
 Prometheus-compatible metrics:
