@@ -1,4 +1,7 @@
-//! Benchmarks for storage operations.
+//! Benchmarks for storage operations (default `in-memory` backend / gateway).
+//!
+//! Vector backends (`sqlite-vec`, optional Qdrant) live in
+//! `vector_storage_benchmarks.rs` — see README **Benchmarks** section.
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use memory_gate_rs::{

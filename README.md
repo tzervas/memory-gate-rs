@@ -208,6 +208,38 @@ let store = SqliteVecStore::open_in_memory_with_model(
 .await?;
 ```
 
+### Production backend choice
+
+| Deployment | Recommended backend | Rationale |
+|------------|---------------------|-----------|
+| Single process / edge / tests | `sqlite-vec` | Embedded DB, no external service; good Wave B baseline in `vector_storage_benchmarks` |
+| Multi-tenant / high QPS search | `qdrant` | Dedicated vector service; run benches locally with Qdrant at `QDRANT_URL` (default `http://127.0.0.1:6334`) when measuring that path |
+
+Both backends use the same [`SupportedEmbeddingModel`](https://docs.rs/memory-gate-rs/latest/memory_gate_rs/enum.SupportedEmbeddingModel.html) catalog (`mg/embed-catalog@STABLE`); pick one model per collection or database.
+
+## Benchmarks
+
+Criterion harnesses measure store/retrieve latency for regression tracking (Wave B perf).
+
+| Bench target | Features | What it measures |
+|--------------|----------|------------------|
+| `storage_benchmarks` | default (`in-memory`) | `MemoryGateway` + `InMemoryStore` |
+| `vector_storage_benchmarks` | `sqlite-vec` | `SqliteVecStore::open_in_memory_with_model`, store, retrieve |
+| `vsa_benchmarks` | default crate features | VSA / holographic ops |
+
+```bash
+# Default in-memory (CI-friendly compile check)
+cargo bench --bench storage_benchmarks --no-run
+
+# Vector backend baselines (compile; first full run downloads embedding weights)
+cargo bench --bench vector_storage_benchmarks --no-run --features sqlite-vec
+
+# Optional: skip cold-open bench when re-measuring store/retrieve only
+MEMORY_GATE_SKIP_HEAVY_BENCH=1 cargo bench --bench vector_storage_benchmarks --features sqlite-vec
+```
+
+Full embedding benchmark runs are intentionally **not** part of CI (model download + GPU/CPU cost). Use `--no-run` in pipelines and run full benches locally before/after Wave B storage changes.
+
 ## Metrics (feature: `metrics`)
 
 Prometheus-compatible metrics:
