@@ -259,9 +259,6 @@ cargo test --features sqlite-vec --test golden_recall -- --ignored --nocapture
 
 Fixture pins `baseline_mean_recall_at_k` and `min_mean_recall_at_k` (≥ baseline × 0.98). Python `memory-gate` is **frozen**; accuracy ownership is **RS-only**.
 
-## Integration roadmap
-
-Post–Wave C, persistent memory is intended to sit behind **tero-rs** (L1 cited index) and **tero-mcp** (tools), using existing `AgentDomain::Tero` / `MemoryGate` scoping — design sketch only, not shipped in Wave C: [docs/TERO_INTEGRATION.md](docs/TERO_INTEGRATION.md).
 
 ## Metrics (feature: `metrics`)
 

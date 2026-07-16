@@ -62,7 +62,7 @@ cargo test --features sqlite-vec --test golden_recall -- --ignored --nocapture
 
 ## Explicit non-goals (Wave C)
 
-- **tero-rs** / **tero-mcp** crate wiring or MCP binary (WS-14) — see [TERO_INTEGRATION.md](TERO_INTEGRATION.md)
+- MCP binary (WS-14) and external index integrations are out of Wave C scope
 - Python golden ownership or new Python product features
 - Shipping without a recorded baseline (baseline is in the fixture)
 
@@ -71,4 +71,3 @@ cargo test --features sqlite-vec --test golden_recall -- --ignored --nocapture
 ## References
 
 - [README.md](../README.md)
-- [TERO_INTEGRATION.md](TERO_INTEGRATION.md)
