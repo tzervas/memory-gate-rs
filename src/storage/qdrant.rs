@@ -298,7 +298,8 @@ impl QdrantStore {
             )));
         }
 
-        if let Some(stored_model) = collection_metadata_string(info, COLLECTION_META_EMBEDDING_MODEL)
+        if let Some(stored_model) =
+            collection_metadata_string(info, COLLECTION_META_EMBEDDING_MODEL)
         {
             if stored_model != model.as_str() {
                 return Err(Error::invalid_config(format!(
@@ -829,7 +830,10 @@ mod tests {
         assert_eq!(qdrant_value_to_json(none_val), Value::Null);
     }
 
-    fn test_collection_info_with_dim(vector_size: u64, metadata: HashMap<String, qdrant_client::qdrant::Value>) -> CollectionInfo {
+    fn test_collection_info_with_dim(
+        vector_size: u64,
+        metadata: HashMap<String, qdrant_client::qdrant::Value>,
+    ) -> CollectionInfo {
         use qdrant_client::qdrant::{
             CollectionConfig, CollectionInfo, CollectionParams, VectorParams, VectorsConfig,
         };

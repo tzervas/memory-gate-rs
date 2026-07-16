@@ -365,7 +365,9 @@ impl SqliteVecStore {
 
     fn learning_context_count(conn: &Connection) -> Result<usize> {
         let count: i64 = conn
-            .query_row("SELECT COUNT(*) FROM learning_contexts", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM learning_contexts", [], |row| {
+                row.get(0)
+            })
             .map_err(|e| StorageError::query(format!("Failed to count learning_contexts: {e}")))?;
         Ok(count as usize)
     }
@@ -925,12 +927,8 @@ mod tests {
             [],
         )
         .unwrap();
-        SqliteVecStore::reconcile_store_meta(
-            &conn,
-            SupportedEmbeddingModel::BgeSmallEnV15,
-            384,
-        )
-        .unwrap();
+        SqliteVecStore::reconcile_store_meta(&conn, SupportedEmbeddingModel::BgeSmallEnV15, 384)
+            .unwrap();
         let model: String = conn
             .query_row(
                 "SELECT value FROM store_meta WHERE key = ?1",
