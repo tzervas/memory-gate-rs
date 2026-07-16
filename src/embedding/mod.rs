@@ -22,6 +22,9 @@ use crate::{Error, Result};
 use std::fmt;
 use std::str::FromStr;
 
+#[cfg(any(feature = "qdrant", feature = "sqlite-vec"))]
+pub mod cache;
+
 /// First-class embedding models supported by memory-gate-rs vector backends.
 ///
 /// String IDs match the Python `memory_gate.embedding_catalog` module.
@@ -150,6 +153,32 @@ pub fn init_text_embedding(model: SupportedEmbeddingModel) -> Result<fastembed::
         InitOptions::new(model.fastembed_model()).with_show_download_progress(false),
     )
     .map_err(|e| Error::embedding(format!("Failed to initialize embedder ({model}): {e}")))
+}
+
+/// Embed multiple texts in one `FastEmbed` call (single lock acquisition on the caller side).
+///
+/// # Errors
+///
+/// Returns [`Error::Embedding`] when batch encoding fails or output length mismatches input.
+#[cfg(any(feature = "qdrant", feature = "sqlite-vec"))]
+pub fn embed_batch(
+    embedder: &mut fastembed::TextEmbedding,
+    texts: &[&str],
+) -> Result<Vec<Vec<f32>>> {
+    if texts.is_empty() {
+        return Ok(Vec::new());
+    }
+    let embeddings = embedder
+        .embed(texts, None)
+        .map_err(|e| Error::embedding(format!("Failed to batch-generate embeddings: {e}")))?;
+    if embeddings.len() != texts.len() {
+        return Err(Error::embedding(format!(
+            "batch embed length mismatch: expected {}, got {}",
+            texts.len(),
+            embeddings.len()
+        )));
+    }
+    Ok(embeddings)
 }
 
 #[cfg(test)]

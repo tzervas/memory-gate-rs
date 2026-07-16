@@ -39,8 +39,12 @@
 //! }
 //! ```
 
-use crate::embedding::{init_text_embedding, SupportedEmbeddingModel};
-use crate::{AgentDomain, KnowledgeStore, LearningContext, Result, StorageError, VectorStore};
+use crate::embedding::cache::{QueryEmbeddingCache, DEFAULT_QUERY_CACHE_CAPACITY};
+use crate::embedding::{embed_batch, init_text_embedding, SupportedEmbeddingModel};
+use crate::{
+    AgentDomain, BatchKnowledgeStore, KnowledgeStore, LearningContext, Result, StorageError,
+    VectorStore,
+};
 use async_trait::async_trait;
 use fastembed::TextEmbedding;
 use rusqlite::{params, Connection};
@@ -77,6 +81,8 @@ pub struct SqliteVecStore {
     model: SupportedEmbeddingModel,
     /// Embedding dimension.
     embedding_dim: usize,
+    /// LRU cache for retrieve-query embeddings (text + model id).
+    query_embed_cache: Arc<Mutex<QueryEmbeddingCache>>,
 }
 
 impl std::fmt::Debug for SqliteVecStore {
@@ -183,6 +189,9 @@ impl SqliteVecStore {
             embedder: Arc::new(Mutex::new(embedder)),
             model,
             embedding_dim: model.dimension(),
+            query_embed_cache: Arc::new(Mutex::new(QueryEmbeddingCache::with_capacity(
+                DEFAULT_QUERY_CACHE_CAPACITY,
+            ))),
         };
 
         store.ensure_schema().await?;
@@ -260,17 +269,69 @@ impl SqliteVecStore {
         Ok(())
     }
 
-    /// Generate embedding for text content.
+    /// Generate embedding for document content (store path; not query-cached).
     async fn embed(&self, text: &str) -> Result<Vec<f32>> {
         let mut embedder = self.embedder.lock().await;
-        let embeddings = embedder
-            .embed(vec![text], None)
-            .map_err(|e| StorageError::backend(format!("Failed to generate embedding: {e}")))?;
-
+        let embeddings = embed_batch(&mut embedder, &[text])
+            .map_err(|e| StorageError::backend(e.to_string()))?;
         embeddings
             .into_iter()
             .next()
             .ok_or_else(|| StorageError::backend("No embedding generated").into())
+    }
+
+    /// Batch-embed multiple strings under one embedder lock.
+    async fn embed_batch_texts(&self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
+        let refs: Vec<&str> = texts.iter().map(String::as_str).collect();
+        let mut embedder = self.embedder.lock().await;
+        Ok(embed_batch(&mut embedder, &refs).map_err(|e| StorageError::backend(e.to_string()))?)
+    }
+
+    /// Embed a retrieve query, using the bounded LRU cache when possible.
+    async fn embed_query(&self, query: &str) -> Result<Vec<f32>> {
+        {
+            let mut cache = self.query_embed_cache.lock().await;
+            if let Some(hit) = cache.get(query, self.model) {
+                return Ok(hit);
+            }
+        }
+        let embedding = self.embed(query).await?;
+        let mut cache = self.query_embed_cache.lock().await;
+        cache.insert(query, self.model, embedding.clone());
+        Ok(embedding)
+    }
+
+    fn persist_row(
+        conn: &Connection,
+        key: &str,
+        experience: &LearningContext,
+        embedding_blob: &[u8],
+    ) -> Result<()> {
+        let context_json = serde_json::to_string(experience)
+            .map_err(|e| StorageError::write(format!("Failed to serialize context: {e}")))?;
+        conn.execute(
+            "INSERT OR REPLACE INTO learning_contexts (key, context_json, domain, content, importance, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![
+                key,
+                context_json,
+                experience.domain.as_str(),
+                experience.content,
+                experience.importance,
+                experience.timestamp.to_rfc3339(),
+            ],
+        )
+        .map_err(|e| StorageError::write(format!("Failed to insert context: {e}")))?;
+        conn.execute(
+            "INSERT OR REPLACE INTO context_embeddings (key, embedding) VALUES (?1, ?2)",
+            params![key, embedding_blob],
+        )
+        .map_err(|e| StorageError::write(format!("Failed to insert embedding: {e}")))?;
+        let _ = conn.execute(
+            "INSERT OR REPLACE INTO vec_contexts (key, embedding) VALUES (?1, ?2)",
+            params![key, embedding_blob],
+        );
+        Ok(())
     }
 
     /// Convert embedding to blob format for storage.
@@ -321,40 +382,8 @@ impl KnowledgeStore<LearningContext> for SqliteVecStore {
     async fn store_experience(&self, key: &str, experience: LearningContext) -> Result<()> {
         let embedding = self.embed(&experience.content).await?;
         let embedding_blob = Self::embedding_to_blob(&embedding);
-        let context_json = serde_json::to_string(&experience)
-            .map_err(|e| StorageError::write(format!("Failed to serialize context: {e}")))?;
-
         let conn = self.conn.lock().await;
-
-        // Insert or replace in main table
-        conn.execute(
-            "INSERT OR REPLACE INTO learning_contexts (key, context_json, domain, content, importance, created_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-            params![
-                key,
-                context_json,
-                experience.domain.as_str(),
-                experience.content,
-                experience.importance,
-                experience.timestamp.to_rfc3339(),
-            ],
-        )
-        .map_err(|e| StorageError::write(format!("Failed to insert context: {e}")))?;
-
-        // Insert or replace in embeddings table
-        conn.execute(
-            "INSERT OR REPLACE INTO context_embeddings (key, embedding) VALUES (?1, ?2)",
-            params![key, embedding_blob],
-        )
-        .map_err(|e| StorageError::write(format!("Failed to insert embedding: {e}")))?;
-
-        // Try to insert into vec table if available
-        let _ = conn.execute(
-            "INSERT OR REPLACE INTO vec_contexts (key, embedding) VALUES (?1, ?2)",
-            params![key, embedding_blob],
-        );
-
-        Ok(())
+        Self::persist_row(&conn, key, &experience, &embedding_blob)
     }
 
     async fn retrieve_context(
@@ -363,7 +392,7 @@ impl KnowledgeStore<LearningContext> for SqliteVecStore {
         limit: usize,
         domain_filter: Option<AgentDomain>,
     ) -> Result<Vec<LearningContext>> {
-        let query_embedding = self.embed(query).await?;
+        let query_embedding = self.embed_query(query).await?;
         let has_vec = self.has_vec_table().await;
 
         if has_vec {
@@ -597,6 +626,46 @@ impl SqliteVecStore {
             scored.into_iter().take(limit).map(|(_, ctx)| ctx).collect();
 
         Ok(contexts)
+    }
+}
+
+#[async_trait]
+impl BatchKnowledgeStore<LearningContext> for SqliteVecStore {
+    async fn store_batch(&self, items: Vec<(String, LearningContext)>) -> Result<()> {
+        if items.is_empty() {
+            return Ok(());
+        }
+        let texts: Vec<String> = items.iter().map(|(_, ctx)| ctx.content.clone()).collect();
+        let embeddings = self.embed_batch_texts(&texts).await?;
+        let conn = self.conn.lock().await;
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| StorageError::write(format!("Failed to start transaction: {e}")))?;
+        for ((key, experience), embedding) in items.into_iter().zip(embeddings) {
+            let blob = Self::embedding_to_blob(&embedding);
+            Self::persist_row(&tx, &key, &experience, &blob)?;
+        }
+        tx.commit()
+            .map_err(|e| StorageError::write(format!("Failed to commit batch: {e}")))?;
+        Ok(())
+    }
+
+    async fn delete_batch(&self, keys: &[String]) -> Result<()> {
+        if keys.is_empty() {
+            return Ok(());
+        }
+        let conn = self.conn.lock().await;
+        for key in keys {
+            let _ = conn.execute("DELETE FROM vec_contexts WHERE key = ?1", params![key]);
+            conn.execute(
+                "DELETE FROM context_embeddings WHERE key = ?1",
+                params![key],
+            )
+            .map_err(|e| StorageError::delete(format!("Failed to delete embedding: {e}")))?;
+            conn.execute("DELETE FROM learning_contexts WHERE key = ?1", params![key])
+                .map_err(|e| StorageError::delete(format!("Failed to delete context: {e}")))?;
+        }
+        Ok(())
     }
 }
 

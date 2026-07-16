@@ -36,8 +36,12 @@
 //! }
 //! ```
 
-use crate::embedding::{init_text_embedding, SupportedEmbeddingModel};
-use crate::{AgentDomain, KnowledgeStore, LearningContext, Result, StorageError, VectorStore};
+use crate::embedding::cache::{QueryEmbeddingCache, DEFAULT_QUERY_CACHE_CAPACITY};
+use crate::embedding::{embed_batch, init_text_embedding, SupportedEmbeddingModel};
+use crate::{
+    AgentDomain, BatchKnowledgeStore, KnowledgeStore, LearningContext, Result, StorageError,
+    VectorStore,
+};
 use async_trait::async_trait;
 use fastembed::TextEmbedding;
 use qdrant_client::qdrant::{
@@ -49,7 +53,7 @@ use qdrant_client::Qdrant;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 /// Qdrant-backed knowledge store with vector similarity search.
 ///
@@ -82,6 +86,8 @@ pub struct QdrantStore {
     model: SupportedEmbeddingModel,
     /// Embedding dimension.
     embedding_dim: usize,
+    /// LRU cache for retrieve-query embeddings (text + model id).
+    query_embed_cache: Arc<Mutex<QueryEmbeddingCache>>,
 }
 
 impl std::fmt::Debug for QdrantStore {
@@ -155,6 +161,9 @@ impl QdrantStore {
             embedder: Arc::new(RwLock::new(embedder)),
             model,
             embedding_dim: model.dimension(),
+            query_embed_cache: Arc::new(Mutex::new(QueryEmbeddingCache::with_capacity(
+                DEFAULT_QUERY_CACHE_CAPACITY,
+            ))),
         };
 
         store.ensure_collection().await?;
@@ -191,6 +200,9 @@ impl QdrantStore {
             embedder: Arc::new(RwLock::new(embedder)),
             model,
             embedding_dim,
+            query_embed_cache: Arc::new(Mutex::new(QueryEmbeddingCache::with_capacity(
+                DEFAULT_QUERY_CACHE_CAPACITY,
+            ))),
         };
 
         store.ensure_collection().await?;
@@ -229,17 +241,36 @@ impl QdrantStore {
         Ok(())
     }
 
-    /// Generate embedding for text content.
+    /// Generate embedding for document content (store path; not query-cached).
     async fn embed(&self, text: &str) -> Result<Vec<f32>> {
         let mut embedder = self.embedder.write().await;
-        let embeddings = embedder
-            .embed(vec![text], None)
-            .map_err(|e| StorageError::backend(format!("Failed to generate embedding: {e}")))?;
-
+        let embeddings = embed_batch(&mut embedder, &[text])
+            .map_err(|e| StorageError::backend(e.to_string()))?;
         embeddings
             .into_iter()
             .next()
             .ok_or_else(|| StorageError::backend("No embedding generated").into())
+    }
+
+    /// Batch-embed multiple strings under one embedder lock.
+    async fn embed_batch_texts(&self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
+        let refs: Vec<&str> = texts.iter().map(String::as_str).collect();
+        let mut embedder = self.embedder.write().await;
+        Ok(embed_batch(&mut embedder, &refs).map_err(|e| StorageError::backend(e.to_string()))?)
+    }
+
+    /// Embed a retrieve query, using the bounded LRU cache when possible.
+    async fn embed_query(&self, query: &str) -> Result<Vec<f32>> {
+        {
+            let mut cache = self.query_embed_cache.lock().await;
+            if let Some(hit) = cache.get(query, self.model) {
+                return Ok(hit);
+            }
+        }
+        let embedding = self.embed(query).await?;
+        let mut cache = self.query_embed_cache.lock().await;
+        cache.insert(query, self.model, embedding.clone());
+        Ok(embedding)
     }
 
     /// Convert a key to a consistent point ID.
@@ -358,7 +389,7 @@ impl KnowledgeStore<LearningContext> for QdrantStore {
         limit: usize,
         domain_filter: Option<AgentDomain>,
     ) -> Result<Vec<LearningContext>> {
-        let query_embedding = self.embed(query).await?;
+        let query_embedding = self.embed_query(query).await?;
 
         let mut search_builder =
             SearchPointsBuilder::new(&self.collection_name, query_embedding, limit as u64)
@@ -498,6 +529,47 @@ impl KnowledgeStore<LearningContext> for QdrantStore {
 
         self.ensure_collection().await?;
 
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl BatchKnowledgeStore<LearningContext> for QdrantStore {
+    async fn store_batch(&self, items: Vec<(String, LearningContext)>) -> Result<()> {
+        if items.is_empty() {
+            return Ok(());
+        }
+        let texts: Vec<String> = items.iter().map(|(_, ctx)| ctx.content.clone()).collect();
+        let embeddings = self.embed_batch_texts(&texts).await?;
+        let mut points = Vec::with_capacity(items.len());
+        for ((key, experience), embedding) in items.into_iter().zip(embeddings) {
+            let point_id = Self::key_to_point_id(&key);
+            let payload = Self::context_to_payload(&key, &experience)?;
+            points.push(PointStruct::new(point_id, embedding, payload));
+        }
+        self.client
+            .upsert_points(UpsertPointsBuilder::new(&self.collection_name, points).wait(true))
+            .await
+            .map_err(|e| StorageError::write(format!("Failed to batch upsert: {e}")))?;
+        Ok(())
+    }
+
+    async fn delete_batch(&self, keys: &[String]) -> Result<()> {
+        if keys.is_empty() {
+            return Ok(());
+        }
+        let ids: Vec<PointId> = keys
+            .iter()
+            .map(|k| PointId::from(Self::key_to_point_id(k)))
+            .collect();
+        self.client
+            .delete_points(
+                DeletePointsBuilder::new(&self.collection_name)
+                    .points(PointsIdsList { ids })
+                    .wait(true),
+            )
+            .await
+            .map_err(|e| StorageError::delete(format!("Failed to batch delete: {e}")))?;
         Ok(())
     }
 }
