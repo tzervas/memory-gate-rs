@@ -1,11 +1,8 @@
 name: CI
 
+# Manual only — no push/pull_request CI triggers
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
+  workflow_dispatch:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1

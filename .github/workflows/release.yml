@@ -1,10 +1,13 @@
 name: Release
 
+# Manual only — no push/pull_request CI triggers
 on:
-  push:
-    tags:
-      - 'v*'
-
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.0.0)"
+        required: true
+        type: string
 env:
   CARGO_TERM_COLOR: always
 
@@ -37,6 +40,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -79,7 +84,7 @@ jobs:
           cp target/${{ matrix.target }}/release/${{ steps.binary.outputs.name }} dist/
           cp README.md LICENSE dist/ 2>/dev/null || true
           cd dist
-          tar -czvf ../${{ steps.binary.outputs.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz *
+          tar -czvf ../${{ steps.binary.outputs.name }}-${{ inputs.tag }}-${{ matrix.target }}.tar.gz *
 
       - name: Create archive (Windows)
         if: matrix.os == 'windows-latest'
@@ -88,7 +93,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path dist
           Copy-Item "target/${{ matrix.target }}/release/${{ steps.binary.outputs.name }}.exe" dist/
           Copy-Item README.md, LICENSE dist/ -ErrorAction SilentlyContinue
-          Compress-Archive -Path dist/* -DestinationPath "${{ steps.binary.outputs.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip"
+          Compress-Archive -Path dist/* -DestinationPath "${{ steps.binary.outputs.name }}-${{ inputs.tag }}-${{ matrix.target }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
@@ -106,6 +111,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
 
       - name: Download all artifacts
         uses: actions/download-artifact@v8
@@ -131,7 +138,7 @@ jobs:
             artifacts/SHA256SUMS.txt
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          prerelease: ${{ contains(inputs.tag, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -141,6 +148,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
