@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - M1 domain/facade (mint kickoff)
 
+### Changed
+- Stop tracking tero-rs correction/integration design docs in this repo (owned by tero-rs itself).
+
 ### Added (docs — Wave C)
 - `docs/WAVE_C_ACCEPTANCE.md` — recall@5 ≤2% relative drop vs recorded fixture baseline (`baseline_mean_recall_at_k` / `min_mean_recall_at_k`), `./scripts/check.sh` + optional `--ignored` golden, aspirational perf non-blocking.
-- `docs/TERO_INTEGRATION.md` — post–Wave C follow-on: tero L1 vs memory-gate-rs; **prerequisite: purge unnecessary mycelium crates from tero-rs** before integration; tero-rs/tero-mcp named as next-wave targets (not implemented in Wave C).
 - README links: Accuracy (Wave C) + Integration roadmap.
 
 ### Fixed
