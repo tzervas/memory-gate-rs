@@ -28,8 +28,7 @@ const MODEL: SupportedEmbeddingModel = SupportedEmbeddingModel::BgeSmallEnV15;
 
 fn skip_heavy() -> bool {
     env::var("MEMORY_GATE_SKIP_HEAVY_BENCH")
-        .ok()
-        .is_some_and(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .is_ok_and(|v| v == "1" || v.eq_ignore_ascii_case("true"))
 }
 
 fn bench_sqlite_vec_open_in_memory(c: &mut Criterion) {
@@ -72,7 +71,7 @@ fn bench_sqlite_vec_store(c: &mut Criterion) {
                 store
                     .store_experience(black_box(&key), ctx)
                     .await
-                    .expect("store experience")
+                    .expect("store experience");
             });
         });
     });

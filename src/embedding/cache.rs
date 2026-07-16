@@ -82,7 +82,7 @@ mod tests {
 
     fn sample_vec(seed: u8) -> Vec<f32> {
         (0..4)
-            .map(|i| f32::from(seed) + f32::from(u8::try_from(i).unwrap()) * 0.1)
+            .map(|i| f32::from(u8::try_from(i).unwrap()).mul_add(0.1, f32::from(seed)))
             .collect()
     }
 
