@@ -171,14 +171,19 @@ pub fn embed_batch(
     let embeddings = embedder
         .embed(texts, None)
         .map_err(|e| Error::embedding(format!("Failed to batch-generate embeddings: {e}")))?;
-    if embeddings.len() != texts.len() {
+    check_batch_embed_lengths(texts.len(), embeddings.len())?;
+    Ok(embeddings)
+}
+
+/// Verify `FastEmbed` batch output length (unit-testable without model download).
+#[cfg(any(feature = "qdrant", feature = "sqlite-vec"))]
+fn check_batch_embed_lengths(expected: usize, actual: usize) -> Result<()> {
+    if actual != expected {
         return Err(Error::embedding(format!(
-            "batch embed length mismatch: expected {}, got {}",
-            texts.len(),
-            embeddings.len()
+            "batch embed length mismatch: expected {expected}, got {actual}"
         )));
     }
-    Ok(embeddings)
+    Ok(())
 }
 
 #[cfg(test)]
@@ -228,6 +233,14 @@ mod tests {
         assert_eq!(SupportedEmbeddingModel::AllMiniLmL6V2.dimension(), 384);
         assert_eq!(SupportedEmbeddingModel::BgeSmallEnV15.dimension(), 384);
         assert_eq!(SupportedEmbeddingModel::BgeBaseEnV15.dimension(), 768);
+    }
+
+    #[cfg(any(feature = "qdrant", feature = "sqlite-vec"))]
+    #[test]
+    fn check_batch_embed_lengths_mismatch() {
+        let err = check_batch_embed_lengths(3, 2).unwrap_err();
+        assert!(err.to_string().contains("batch embed length mismatch"));
+        assert!(check_batch_embed_lengths(0, 0).is_ok());
     }
 
     #[test]

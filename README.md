@@ -158,7 +158,7 @@ let store = InMemoryStore::new();
 
 ### Embedding models (Qdrant / sqlite-vec)
 
-Vector backends share a stable catalog (`mg/embed-catalog`) with the Python `memory-gate` package. One model (and its dimension) is bound per collection or database.
+Vector backends share a stable catalog (`mg/embed-catalog`) with the Python `memory-gate` package. **Use a separate Qdrant collection name or SQLite file per catalog model** — never reuse the same collection/DB path after switching models (including two 384-d models such as MiniLM vs BGE-small). Opens fail closed when vector dimension or stamped model metadata does not match the configured model.
 
 | Stable ID | Dimension | Notes |
 |-----------|-----------|-------|
@@ -178,14 +178,16 @@ use memory_gate_rs::{storage::QdrantStore, SupportedEmbeddingModel};
 // Default: bge-small-en-v1.5 (384-d)
 let store = QdrantStore::new("http://localhost:6334", "memories").await?;
 
-// Explicit model (e.g. parity with Python on MiniLM)
+// Explicit model (e.g. parity with Python on MiniLM) — use a distinct collection name
 let store = QdrantStore::with_model(
     "http://localhost:6334",
-    "memories",
+    "memories_minilm",
     SupportedEmbeddingModel::AllMiniLmL6V2,
 )
 .await?;
 ```
+
+`retrieve_context` warms a bounded LRU **query embedding cache** (same text + model id as cold embed); first query per key pays embed cost, repeats are warm.
 
 ### SQLite + Vector (feature: `sqlite-vec`)
 
@@ -196,8 +198,9 @@ use memory_gate_rs::{storage::SqliteVecStore, SupportedEmbeddingModel};
 
 let store = SqliteVecStore::open("./memory.db").await?;
 
+// One DB file per model (e.g. memory_bge_base.db vs memory_minilm.db)
 let store = SqliteVecStore::open_with_model(
-    "./memory.db",
+    "./memory_bge_base.db",
     SupportedEmbeddingModel::BgeBaseEnV15,
 )
 .await?;
@@ -226,6 +229,8 @@ Criterion harnesses measure store/retrieve latency for regression tracking (Wave
 | `storage_benchmarks` | default (`in-memory`) | `MemoryGateway` + `InMemoryStore` |
 | `vector_storage_benchmarks` | `sqlite-vec` | `SqliteVecStore::open_in_memory_with_model`, store, retrieve |
 | `vsa_benchmarks` | default crate features | VSA / holographic ops |
+
+There is **no** dedicated Qdrant Criterion bench in-tree yet; compare Qdrant operationally or add a local bench when `qdrant` is enabled. Vector regression baselines today are **sqlite-vec** via `vector_storage_benchmarks`.
 
 ```bash
 # Default in-memory (CI-friendly compile check)

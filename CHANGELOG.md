@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - M1 domain/facade (mint kickoff)
 
+### Fixed
+- **Store model binding (`mg/store-model-binding`)**: Qdrant and sqlite-vec backends fail closed on embedding dimension mismatch when reopening a collection/DB; sqlite-vec persists `store_meta` (`embedding_model`, `embedding_dim`) and rejects legacy DBs that already contain rows without metadata. Qdrant stamps collection metadata on create and validates vector size (and model metadata when present). SQLite fallback search errors on stored/query vector length mismatch instead of returning zero similarity.
+
 ### Added
 - Batch embedding (`embed_batch`) and `BatchKnowledgeStore::store_batch` on `QdrantStore` and `SqliteVecStore` (single FastEmbed lock per batch).
 - Bounded LRU query embedding cache (256 entries, keyed by query text + model id) on vector backends for `retrieve_context`.

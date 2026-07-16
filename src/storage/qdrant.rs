@@ -39,19 +39,25 @@
 use crate::embedding::cache::{QueryEmbeddingCache, DEFAULT_QUERY_CACHE_CAPACITY};
 use crate::embedding::{embed_batch, init_text_embedding, SupportedEmbeddingModel};
 use crate::{
-    AgentDomain, BatchKnowledgeStore, KnowledgeStore, LearningContext, Result, StorageError,
+    AgentDomain, BatchKnowledgeStore, Error, KnowledgeStore, LearningContext, Result, StorageError,
     VectorStore,
 };
 use async_trait::async_trait;
 use fastembed::TextEmbedding;
 use qdrant_client::qdrant::{
-    Condition, CreateCollectionBuilder, DeletePointsBuilder, Distance, Filter, GetPointsBuilder,
-    PointId, PointStruct, PointsIdsList, ScalarQuantizationBuilder, ScrollPointsBuilder,
-    SearchParamsBuilder, SearchPointsBuilder, UpsertPointsBuilder, VectorParamsBuilder,
+    vectors_config, CollectionInfo, Condition, CreateCollectionBuilder, DeletePointsBuilder,
+    Distance, Filter, GetPointsBuilder, PointId, PointStruct, PointsIdsList,
+    ScalarQuantizationBuilder, ScrollPointsBuilder, SearchParamsBuilder, SearchPointsBuilder,
+    UpsertPointsBuilder, VectorParamsBuilder,
 };
 use qdrant_client::Qdrant;
 use serde_json::Value;
 use std::collections::HashMap;
+
+/// Collection metadata key for catalog embedding model id (`mg/embed-catalog`).
+const COLLECTION_META_EMBEDDING_MODEL: &str = "mg_embedding_model";
+/// Collection metadata key for embedding dimension.
+const COLLECTION_META_EMBEDDING_DIM: &str = "mg_embedding_dim";
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
 
@@ -225,6 +231,15 @@ impl QdrantStore {
             .map_err(|e| StorageError::connection(format!("Failed to check collection: {e}")))?;
 
         if !exists {
+            let mut metadata = HashMap::new();
+            metadata.insert(
+                COLLECTION_META_EMBEDDING_MODEL.to_string(),
+                Value::String(self.model.as_str().to_string()),
+            );
+            metadata.insert(
+                COLLECTION_META_EMBEDDING_DIM.to_string(),
+                Value::Number(serde_json::Number::from(self.embedding_dim)),
+            );
             self.client
                 .create_collection(
                     CreateCollectionBuilder::new(&self.collection_name)
@@ -232,10 +247,78 @@ impl QdrantStore {
                             self.embedding_dim as u64,
                             Distance::Cosine,
                         ))
-                        .quantization_config(ScalarQuantizationBuilder::default()),
+                        .quantization_config(ScalarQuantizationBuilder::default())
+                        .metadata(metadata),
                 )
                 .await
                 .map_err(|e| StorageError::backend(format!("Failed to create collection: {e}")))?;
+            return Ok(());
+        }
+
+        let info = self
+            .client
+            .collection_info(&self.collection_name)
+            .await
+            .map_err(|e| StorageError::connection(format!("Failed to get collection info: {e}")))?;
+
+        let info = info
+            .result
+            .ok_or_else(|| StorageError::backend("collection info missing from Qdrant response"))?;
+
+        Self::validate_existing_collection(
+            &self.collection_name,
+            &info,
+            self.model,
+            self.embedding_dim,
+        )?;
+
+        Ok(())
+    }
+
+    /// Fail closed when an existing collection's vector size or stamped model disagrees with this store.
+    fn validate_existing_collection(
+        collection_name: &str,
+        info: &CollectionInfo,
+        model: SupportedEmbeddingModel,
+        expected_dim: usize,
+    ) -> Result<()> {
+        let actual_dim = collection_vector_dimension(info).ok_or_else(|| {
+            Error::invalid_config(format!(
+                "collection '{collection_name}' has no vector size in config; cannot verify embedding dimension for model '{}'",
+                model.as_str()
+            ))
+        })?;
+
+        if actual_dim != expected_dim as u64 {
+            return Err(Error::invalid_config(format!(
+                "collection embedding dimension mismatch: expected {} for model '{}', found {}",
+                expected_dim,
+                model.as_str(),
+                actual_dim
+            )));
+        }
+
+        if let Some(stored_model) = collection_metadata_string(info, COLLECTION_META_EMBEDDING_MODEL)
+        {
+            if stored_model != model.as_str() {
+                return Err(Error::invalid_config(format!(
+                    "collection embedding model mismatch: expected '{}', found '{}' (dimension {})",
+                    model.as_str(),
+                    stored_model,
+                    expected_dim
+                )));
+            }
+        }
+
+        if let Some(stored_dim) = collection_metadata_usize(info, COLLECTION_META_EMBEDDING_DIM) {
+            if stored_dim != expected_dim {
+                return Err(Error::invalid_config(format!(
+                    "collection metadata embedding_dim mismatch: expected {}, found {} (model '{}')",
+                    expected_dim,
+                    stored_dim,
+                    model.as_str()
+                )));
+            }
         }
 
         Ok(())
@@ -580,6 +663,48 @@ impl VectorStore<LearningContext> for QdrantStore {
     }
 }
 
+/// Read the default (unnamed) vector dimension from collection info.
+fn collection_vector_dimension(info: &CollectionInfo) -> Option<u64> {
+    let vectors = info
+        .config
+        .as_ref()?
+        .params
+        .as_ref()?
+        .vectors_config
+        .as_ref()?;
+    match &vectors.config {
+        Some(vectors_config::Config::Params(p)) => Some(p.size),
+        Some(vectors_config::Config::ParamsMap(m)) => m
+            .map
+            .get("")
+            .or_else(|| m.map.values().next())
+            .map(|p| p.size),
+        None => None,
+    }
+}
+
+fn collection_metadata_string(info: &CollectionInfo, key: &str) -> Option<String> {
+    let value = info.config.as_ref()?.metadata.get(key)?;
+    qdrant_metadata_value_as_str(value)
+}
+
+fn collection_metadata_usize(info: &CollectionInfo, key: &str) -> Option<usize> {
+    let value = info.config.as_ref()?.metadata.get(key)?;
+    match &value.kind {
+        Some(qdrant_client::qdrant::value::Kind::IntegerValue(i)) => usize::try_from(*i).ok(),
+        Some(qdrant_client::qdrant::value::Kind::StringValue(s)) => s.parse().ok(),
+        _ => None,
+    }
+}
+
+fn qdrant_metadata_value_as_str(value: &qdrant_client::qdrant::Value) -> Option<String> {
+    use qdrant_client::qdrant::value::Kind;
+    match &value.kind {
+        Some(Kind::StringValue(s)) => Some(s.clone()),
+        _ => None,
+    }
+}
+
 /// Convert a Qdrant Value to a `serde_json` Value.
 fn qdrant_value_to_json(value: qdrant_client::qdrant::Value) -> Value {
     use qdrant_client::qdrant::value::Kind;
@@ -702,6 +827,97 @@ mod tests {
         // Test None kind
         let none_val = QdrantValue { kind: None };
         assert_eq!(qdrant_value_to_json(none_val), Value::Null);
+    }
+
+    fn test_collection_info_with_dim(vector_size: u64, metadata: HashMap<String, qdrant_client::qdrant::Value>) -> CollectionInfo {
+        use qdrant_client::qdrant::{
+            CollectionConfig, CollectionInfo, CollectionParams, VectorParams, VectorsConfig,
+        };
+
+        CollectionInfo {
+            status: 0,
+            optimizer_status: None,
+            segments_count: 1,
+            config: Some(CollectionConfig {
+                params: Some(CollectionParams {
+                    shard_number: 1,
+                    on_disk_payload: false,
+                    vectors_config: Some(VectorsConfig {
+                        config: Some(vectors_config::Config::Params(VectorParams {
+                            size: vector_size,
+                            distance: 0,
+                            hnsw_config: None,
+                            quantization_config: None,
+                            on_disk: None,
+                            datatype: None,
+                            multivector_config: None,
+                        })),
+                    }),
+                    replication_factor: None,
+                    write_consistency_factor: None,
+                    read_fan_out_factor: None,
+                    sharding_method: None,
+                    sparse_vectors_config: None,
+                    read_fan_out_delay_ms: None,
+                }),
+                hnsw_config: None,
+                optimizer_config: None,
+                wal_config: None,
+                quantization_config: None,
+                strict_mode_config: None,
+                metadata,
+            }),
+            payload_schema: HashMap::new(),
+            points_count: Some(0),
+            indexed_vectors_count: None,
+            warnings: vec![],
+            update_queue: None,
+        }
+    }
+
+    #[test]
+    fn test_collection_vector_dimension_from_params() {
+        let info = test_collection_info_with_dim(384, HashMap::new());
+        assert_eq!(collection_vector_dimension(&info), Some(384));
+    }
+
+    #[test]
+    fn test_validate_existing_collection_dim_mismatch() {
+        let info = test_collection_info_with_dim(768, HashMap::new());
+
+        let err = QdrantStore::validate_existing_collection(
+            "memories",
+            &info,
+            SupportedEmbeddingModel::BgeSmallEnV15,
+            384,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("dimension mismatch"));
+        assert!(err.to_string().contains("768"));
+    }
+
+    #[test]
+    fn test_validate_existing_collection_model_mismatch_same_dim() {
+        use qdrant_client::qdrant::{value::Kind, Value as QdrantValue};
+
+        let mut metadata = HashMap::new();
+        metadata.insert(
+            COLLECTION_META_EMBEDDING_MODEL.to_string(),
+            QdrantValue {
+                kind: Some(Kind::StringValue("all-minilm-l6-v2".to_string())),
+            },
+        );
+
+        let info = test_collection_info_with_dim(384, metadata);
+
+        let err = QdrantStore::validate_existing_collection(
+            "memories",
+            &info,
+            SupportedEmbeddingModel::BgeSmallEnV15,
+            384,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("model mismatch"));
     }
 
     #[test]

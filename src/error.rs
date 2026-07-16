@@ -130,6 +130,7 @@ impl StorageError {
     pub fn backend(msg: impl Into<String>) -> Self {
         Self::Backend(msg.into())
     }
+
 }
 
 impl Error {
