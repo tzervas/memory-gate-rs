@@ -132,6 +132,7 @@ mod types;
 pub mod adapters;
 pub mod agents;
 pub mod embedding;
+pub mod eval;
 pub mod metrics;
 pub mod storage;
 pub mod vsa;

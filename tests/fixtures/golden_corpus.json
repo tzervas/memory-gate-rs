@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "model_id": "all-minilm-l6-v2",
+  "k": 5,
+  "min_mean_recall_at_k": 0.75,
+  "documents": [
+    {
+      "id": "doc-k8s-rollout",
+      "content": "Kubernetes deployment api-service pods crashlooping fixed by kubectl rollout restart deployment api-service",
+      "domain": "Deployment"
+    },
+    {
+      "id": "doc-k8s-scale",
+      "content": "Traffic spike handled by increasing Kubernetes deployment replicas and enabling horizontal pod autoscaling",
+      "domain": "Deployment"
+    },
+    {
+      "id": "doc-k8s-imagepull",
+      "content": "ImagePullBackOff on cluster nodes resolved by updating container registry pull secrets and credentials",
+      "domain": "Deployment"
+    },
+    {
+      "id": "doc-ngx-timeout",
+      "content": "nginx reverse proxy 504 gateway timeout fixed by raising proxy_read_timeout and proxy_connect_timeout",
+      "domain": "Infrastructure"
+    },
+    {
+      "id": "doc-ngx-cpu",
+      "content": "High CPU on nginx workers mitigated by graceful nginx reload and systemd restart nginx service",
+      "domain": "Infrastructure"
+    },
+    {
+      "id": "doc-pg-index",
+      "content": "PostgreSQL slow queries on orders table fixed by adding btree index on user_id column",
+      "domain": "Infrastructure"
+    },
+    {
+      "id": "doc-pg-pool",
+      "content": "PostgreSQL connection pool exhausted in application tier increased max_connections and pgbouncer pool size",
+      "domain": "Infrastructure"
+    },
+    {
+      "id": "doc-ci-rust",
+      "content": "GitHub Actions CI pipeline failed on cargo test fixed rust toolchain cache and lockfile sync",
+      "domain": "General"
+    },
+    {
+      "id": "doc-ci-helm",
+      "content": "Staging release deployed with helm upgrade chart version bump and values override for image tag",
+      "domain": "Deployment"
+    },
+    {
+      "id": "doc-mon-prom",
+      "content": "Prometheus alert fired for disk usage above eighty five percent on volume mount /var/lib",
+      "domain": "Infrastructure"
+    },
+    {
+      "id": "doc-mon-grafana",
+      "content": "Grafana dashboard tracks API latency p95 against SLO threshold for production gateway",
+      "domain": "Infrastructure"
+    },
+    {
+      "id": "doc-ssh-bastion",
+      "content": "SSH bastion host access restricted with security group allowlist and MFA for production jump box",
+      "domain": "Infrastructure"
+    }
+  ],
+  "queries": [
+    {
+      "id": "q-k8s-restart",
+      "text": "kubernetes deployment restart crashlooping pods",
+      "relevant_ids": ["doc-k8s-rollout", "doc-k8s-scale"]
+    },
+    {
+      "id": "q-nginx-proxy",
+      "text": "nginx reverse proxy timeout high CPU workers",
+      "relevant_ids": ["doc-ngx-timeout", "doc-ngx-cpu"]
+    },
+    {
+      "id": "q-postgres",
+      "text": "postgresql slow queries connection pool database",
+      "relevant_ids": ["doc-pg-index", "doc-pg-pool"]
+    },
+    {
+      "id": "q-ci",
+      "text": "github actions rust CI pipeline cargo test failure",
+      "relevant_ids": ["doc-ci-rust", "doc-ci-helm"]
+    },
+    {
+      "id": "q-monitoring",
+      "text": "prometheus alert grafana dashboard API latency SLO",
+      "relevant_ids": ["doc-mon-prom", "doc-mon-grafana"]
+    },
+    {
+      "id": "q-bastion",
+      "text": "ssh bastion jump box security group production access",
+      "relevant_ids": ["doc-ssh-bastion"]
+    }
+  ]
+}
