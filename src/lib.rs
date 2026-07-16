@@ -91,6 +91,7 @@
 //!
 //! - [`adapters`]: Memory adapters for knowledge transformation pipelines
 //! - [`embedding`]: Shared multi-model embedding catalog (cross-port with Python)
+//! - [`eval`]: Retrieval metric helpers (golden recall@k; harness-oriented)
 //! - [`storage`]: Pluggable storage backends for persistence
 //! - [`agents`]: Base agent implementations with memory integration
 //! - [`metrics`]: Prometheus-compatible observability metrics
@@ -132,6 +133,7 @@ mod types;
 pub mod adapters;
 pub mod agents;
 pub mod embedding;
+pub mod eval;
 pub mod metrics;
 pub mod storage;
 pub mod vsa;

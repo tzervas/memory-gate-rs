@@ -36,6 +36,23 @@ M1 domains + facade complete (see below). Companion: [AGENTS.md](AGENTS.md), [CO
 
 See dev-workflow in workspace docs, guards, wsfull-wave-2026-07-09-compact.md, WORKSPACE_CABAL_TERO_READINESS.md.
 
+### Wave C — Golden recall + accuracy gate (in progress)
+
+- Fixed corpus + queries (`mg/golden-recall`); mean recall@5 must not drop **>2%** vs baseline in fixture/docs.
+- Pure metric unit tests in default CI; full FastEmbed integration via `cargo test --test golden_recall -- --ignored`.
+- Local merge gate: `./scripts/check.sh`.
+- **Canonical RS only** — Python frozen after embed parity.
+- Acceptance detail: [WAVE_C_ACCEPTANCE.md](WAVE_C_ACCEPTANCE.md).
+
+**Status:** Wave C delivery (golden tests/fixtures owned by L1-GOLDEN sibling); docs acceptance criteria on `feat/wave-c-golden-recall`.
+
+### Post–Wave C — Tero + MCP integration (planned)
+
+- **tero-rs**: cited L1 index; optional adapter to memory-gate-rs learn/retrieve.
+- **tero-mcp**: tool surface; companion or separate memory MCP (WS-14) TBD.
+- Scoping via existing M1 domains (`Tero`, `MemoryGate`, `Context`, lang/repo prefixes).
+- Design only until next wave: [TERO_INTEGRATION.md](TERO_INTEGRATION.md). No `tero-rs` / `tero-mcp` crate dependency in Wave C PR.
+
 ---
 
 ## Links
@@ -43,4 +60,5 @@ See dev-workflow in workspace docs, guards, wsfull-wave-2026-07-09-compact.md, W
 - AGENTS.md (Tero rule, local checks, PR flow)
 - CONTRIBUTING.md (cargo fmt/clippy/test, doc requirements)
 - CHANGELOG.md (M1 entries)
+- [WAVE_C_ACCEPTANCE.md](WAVE_C_ACCEPTANCE.md), [TERO_INTEGRATION.md](TERO_INTEGRATION.md)
 - tero index: `docs/tero-index/index.json`
