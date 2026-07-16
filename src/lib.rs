@@ -89,6 +89,7 @@
 //!
 //! ## Modules
 //!
+//! - [`facade`]: Integration surface for tero-rs (`join/mg-facade@STABLE`)
 //! - [`adapters`]: Memory adapters for knowledge transformation pipelines
 //! - [`embedding`]: Shared multi-model embedding catalog (cross-port with Python)
 //! - [`eval`]: Retrieval metric helpers (golden recall@k; harness-oriented)
@@ -134,6 +135,7 @@ pub mod adapters;
 pub mod agents;
 pub mod embedding;
 pub mod eval;
+pub mod facade;
 pub mod metrics;
 pub mod storage;
 pub mod vsa;
@@ -147,6 +149,16 @@ pub use traits::{
     TaskResult, VectorStore,
 };
 pub use types::{AgentDomain, ConsolidationStats, GatewayConfig, LearningContext};
+
+// Integration facade re-exports (`join/mg-facade@STABLE`)
+#[cfg(feature = "sqlite-vec")]
+pub use facade::open_prod_sqlite;
+pub use facade::{
+    build_tero_metadata_map, consolidate_once, for_tero_learn, gateway_with_store,
+    join_tero_anchors, learn, retrieve, IntegrationConfig, ProdMemoryConfig, TeroMemoryMeta,
+    PROD_QDRANT_COLLECTION_HINT, PROD_SQLITE_PATH_HINT, TERO_META_ANCHORS, TERO_META_INDEX,
+    TERO_META_SOURCE, TERO_SOURCE_VALUE,
+};
 
 /// Prelude module for convenient imports.
 ///
