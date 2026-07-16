@@ -1,4 +1,4 @@
-//! Golden corpus recall@k on the sqlite-vec + FastEmbed path.
+//! Golden corpus recall@k on the sqlite-vec + `FastEmbed` path.
 //!
 //! Default CI skips the embedding download via `#[ignore]`.
 //!
