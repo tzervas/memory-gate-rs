@@ -39,16 +39,14 @@
 //! }
 //! ```
 
+use crate::embedding::{init_text_embedding, SupportedEmbeddingModel};
 use crate::{AgentDomain, KnowledgeStore, LearningContext, Result, StorageError, VectorStore};
 use async_trait::async_trait;
-use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
+use fastembed::TextEmbedding;
 use rusqlite::{params, Connection};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
-/// Default embedding dimension for the default model (BAAI/bge-small-en-v1.5).
-const DEFAULT_EMBEDDING_DIM: usize = 384;
 
 /// SQLite-based knowledge store with vector similarity search via sqlite-vec.
 ///
@@ -75,6 +73,8 @@ pub struct SqliteVecStore {
     conn: Arc<Mutex<Connection>>,
     /// Text embedding model.
     embedder: Arc<Mutex<TextEmbedding>>,
+    /// Catalog model bound to this database.
+    model: SupportedEmbeddingModel,
     /// Embedding dimension.
     embedding_dim: usize,
 }
@@ -82,13 +82,14 @@ pub struct SqliteVecStore {
 impl std::fmt::Debug for SqliteVecStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SqliteVecStore")
+            .field("model", &self.model.as_str())
             .field("embedding_dim", &self.embedding_dim)
             .finish_non_exhaustive()
     }
 }
 
 impl SqliteVecStore {
-    /// Open an in-memory `SQLite` database with vector support.
+    /// Open an in-memory `SQLite` database with the default embedding model.
     ///
     /// This is useful for testing or temporary storage that doesn't need
     /// to persist across restarts.
@@ -103,15 +104,25 @@ impl SqliteVecStore {
     /// let store = SqliteVecStore::open_in_memory().await?;
     /// ```
     pub async fn open_in_memory() -> Result<Self> {
+        Self::open_in_memory_with_model(SupportedEmbeddingModel::DEFAULT).await
+    }
+
+    /// Open an in-memory database bound to a catalog embedding model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if embedder init or schema creation fails.
+    pub async fn open_in_memory_with_model(model: SupportedEmbeddingModel) -> Result<Self> {
         Self::open_with_connection(
             Connection::open_in_memory().map_err(|e| {
                 StorageError::connection(format!("Failed to open in-memory DB: {e}"))
             })?,
+            model,
         )
         .await
     }
 
-    /// Open a file-based `SQLite` database with vector support.
+    /// Open a file-based `SQLite` database with the default embedding model.
     ///
     /// Creates the database file if it doesn't exist. The schema will be
     /// automatically created on first open.
@@ -130,27 +141,48 @@ impl SqliteVecStore {
     /// let store = SqliteVecStore::open("./data/memories.db").await?;
     /// ```
     pub async fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
+        Self::open_with_model(path, SupportedEmbeddingModel::DEFAULT).await
+    }
+
+    /// Open a file-based database bound to a catalog embedding model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the database cannot be opened or initialized.
+    pub async fn open_with_model<P: AsRef<Path>>(
+        path: P,
+        model: SupportedEmbeddingModel,
+    ) -> Result<Self> {
         Self::open_with_connection(
             Connection::open(path.as_ref())
                 .map_err(|e| StorageError::connection(format!("Failed to open DB: {e}")))?,
+            model,
         )
         .await
     }
 
-    /// Open with an existing connection.
-    async fn open_with_connection(conn: Connection) -> Result<Self> {
+    /// Catalog embedding model bound to this store.
+    #[must_use]
+    pub const fn embedding_model(&self) -> SupportedEmbeddingModel {
+        self.model
+    }
+
+    /// Open with an existing connection and catalog model.
+    async fn open_with_connection(
+        conn: Connection,
+        model: SupportedEmbeddingModel,
+    ) -> Result<Self> {
         // Log sqlite-vec extension status
         Self::load_vec_extension(&conn);
 
-        let embedder = TextEmbedding::try_new(
-            InitOptions::new(EmbeddingModel::BGESmallENV15).with_show_download_progress(false),
-        )
-        .map_err(|e| StorageError::backend(format!("Failed to initialize embedder: {e}")))?;
+        let embedder =
+            init_text_embedding(model).map_err(|e| StorageError::backend(e.to_string()))?;
 
         let store = Self {
             conn: Arc::new(Mutex::new(conn)),
             embedder: Arc::new(Mutex::new(embedder)),
-            embedding_dim: DEFAULT_EMBEDDING_DIM,
+            model,
+            embedding_dim: model.dimension(),
         };
 
         store.ensure_schema().await?;
@@ -841,6 +873,27 @@ mod tests {
     #[ignore = "requires embedding model download"]
     async fn test_embedding_dimension() {
         let store = SqliteVecStore::open_in_memory().await.unwrap();
-        assert_eq!(store.embedding_dimension(), DEFAULT_EMBEDDING_DIM);
+        assert_eq!(
+            store.embedding_dimension(),
+            SupportedEmbeddingModel::DEFAULT.dimension()
+        );
+        assert_eq!(
+            store.embedding_model(),
+            SupportedEmbeddingModel::BgeSmallEnV15
+        );
+    }
+
+    #[tokio::test]
+    #[ignore = "requires embedding model download"]
+    async fn test_open_with_minilm_model() {
+        let store =
+            SqliteVecStore::open_in_memory_with_model(SupportedEmbeddingModel::AllMiniLmL6V2)
+                .await
+                .unwrap();
+        assert_eq!(
+            store.embedding_model(),
+            SupportedEmbeddingModel::AllMiniLmL6V2
+        );
+        assert_eq!(store.embedding_dimension(), 384);
     }
 }

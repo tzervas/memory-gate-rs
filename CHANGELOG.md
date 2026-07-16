@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - M1 domain/facade (mint kickoff)
 
+### Added
+- Multi-model embedding catalog (`SupportedEmbeddingModel`) for `qdrant` and `sqlite-vec` backends: `all-minilm-l6-v2`, `bge-small-en-v1.5` (default), `bge-base-en-v1.5`; stable IDs aligned with Python `memory-gate` (`mg/embed-catalog@STABLE`).
+- `QdrantStore::with_model` and `SqliteVecStore::open_with_model` / `open_in_memory_with_model`; `new()` / `open()` remain default BGE-small for backward compatibility.
+- `SupportedEmbeddingModel::parse`, `dimension()`, `sentence_transformers_id()`, and feature-gated `embedding::init_text_embedding`.
+
 ### Added (M1)
 - Extended `AgentDomain` with workspace integration domains: `Workspace`, `Tero`, `Context`, `MemoryGate`, `LangRust`, `LangPython`.
 - Prefix-aware `FromStr` (e.g. "layer:tero", "lang:rust", "repo:foo") for unified scoping/facade.

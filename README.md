@@ -156,14 +156,35 @@ use memory_gate_rs::storage::InMemoryStore;
 let store = InMemoryStore::new();
 ```
 
+### Embedding models (Qdrant / sqlite-vec)
+
+Vector backends share a stable catalog (`mg/embed-catalog`) with the Python `memory-gate` package. One model (and its dimension) is bound per collection or database.
+
+| Stable ID | Dimension | Notes |
+|-----------|-----------|-------|
+| `all-minilm-l6-v2` | 384 | Cross-port parity / lighter latency |
+| `bge-small-en-v1.5` | 384 | **Default** for `new()` / `open()` (backward compatible) |
+| `bge-base-en-v1.5` | 768 | Higher accuracy, larger vectors |
+
+Parse IDs with `SupportedEmbeddingModel::parse("bge-base-en-v1.5")?` or pass a [`SupportedEmbeddingModel`](https://docs.rs/memory-gate-rs/latest/memory_gate_rs/enum.SupportedEmbeddingModel.html) directly.
+
 ### Qdrant (feature: `qdrant`)
 
 Production vector database with semantic search:
 
 ```rust
-use memory_gate_rs::storage::QdrantStore;
+use memory_gate_rs::{storage::QdrantStore, SupportedEmbeddingModel};
 
+// Default: bge-small-en-v1.5 (384-d)
 let store = QdrantStore::new("http://localhost:6334", "memories").await?;
+
+// Explicit model (e.g. parity with Python on MiniLM)
+let store = QdrantStore::with_model(
+    "http://localhost:6334",
+    "memories",
+    SupportedEmbeddingModel::AllMiniLmL6V2,
+)
+.await?;
 ```
 
 ### SQLite + Vector (feature: `sqlite-vec`)
@@ -171,9 +192,20 @@ let store = QdrantStore::new("http://localhost:6334", "memories").await?;
 Embedded vector storage with SQLite:
 
 ```rust
-use memory_gate_rs::storage::SqliteVecStore;
+use memory_gate_rs::{storage::SqliteVecStore, SupportedEmbeddingModel};
 
-let store = SqliteVecStore::new("./memory.db").await?;
+let store = SqliteVecStore::open("./memory.db").await?;
+
+let store = SqliteVecStore::open_with_model(
+    "./memory.db",
+    SupportedEmbeddingModel::BgeBaseEnV15,
+)
+.await?;
+
+let store = SqliteVecStore::open_in_memory_with_model(
+    SupportedEmbeddingModel::default(),
+)
+.await?;
 ```
 
 ## Metrics (feature: `metrics`)

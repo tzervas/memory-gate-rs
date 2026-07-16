@@ -36,9 +36,10 @@
 //! }
 //! ```
 
+use crate::embedding::{init_text_embedding, SupportedEmbeddingModel};
 use crate::{AgentDomain, KnowledgeStore, LearningContext, Result, StorageError, VectorStore};
 use async_trait::async_trait;
-use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
+use fastembed::TextEmbedding;
 use qdrant_client::qdrant::{
     Condition, CreateCollectionBuilder, DeletePointsBuilder, Distance, Filter, GetPointsBuilder,
     PointId, PointStruct, PointsIdsList, ScalarQuantizationBuilder, ScrollPointsBuilder,
@@ -49,9 +50,6 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-/// Default embedding dimension for the default model (BAAI/bge-small-en-v1.5).
-const DEFAULT_EMBEDDING_DIM: usize = 384;
 
 /// Qdrant-backed knowledge store with vector similarity search.
 ///
@@ -80,6 +78,8 @@ pub struct QdrantStore {
     collection_name: String,
     /// Text embedding model.
     embedder: Arc<RwLock<TextEmbedding>>,
+    /// Catalog model bound to this collection.
+    model: SupportedEmbeddingModel,
     /// Embedding dimension.
     embedding_dim: usize,
 }
@@ -88,13 +88,14 @@ impl std::fmt::Debug for QdrantStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("QdrantStore")
             .field("collection_name", &self.collection_name)
+            .field("model", &self.model.as_str())
             .field("embedding_dim", &self.embedding_dim)
             .finish_non_exhaustive()
     }
 }
 
 impl QdrantStore {
-    /// Create a new Qdrant store and connect to the server.
+    /// Create a new Qdrant store with the default embedding model (`bge-small-en-v1.5`).
     ///
     /// This will create the collection if it doesn't exist, using optimal
     /// settings for similarity search.
@@ -114,20 +115,46 @@ impl QdrantStore {
     /// let store = QdrantStore::new("http://localhost:6334", "my_memories").await?;
     /// ```
     pub async fn new(url: &str, collection_name: &str) -> Result<Self> {
+        Self::with_model(url, collection_name, SupportedEmbeddingModel::DEFAULT).await
+    }
+
+    /// Create a new Qdrant store bound to a catalog embedding model.
+    ///
+    /// The collection vector size is set from [`SupportedEmbeddingModel::dimension`].
+    /// Prefer this over [`Self::with_dimension`] so model identity is explicit.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if connection, embedder init, or collection creation fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use memory_gate_rs::{storage::QdrantStore, SupportedEmbeddingModel};
+    /// let store = QdrantStore::with_model(
+    ///     "http://localhost:6334",
+    ///     "memories_minilm",
+    ///     SupportedEmbeddingModel::AllMiniLmL6V2,
+    /// ).await?;
+    /// ```
+    pub async fn with_model(
+        url: &str,
+        collection_name: &str,
+        model: SupportedEmbeddingModel,
+    ) -> Result<Self> {
         let client = Qdrant::from_url(url)
             .build()
             .map_err(|e| StorageError::connection(format!("Failed to connect to Qdrant: {e}")))?;
 
-        let embedder = TextEmbedding::try_new(
-            InitOptions::new(EmbeddingModel::BGESmallENV15).with_show_download_progress(false),
-        )
-        .map_err(|e| StorageError::backend(format!("Failed to initialize embedder: {e}")))?;
+        let embedder =
+            init_text_embedding(model).map_err(|e| StorageError::backend(e.to_string()))?;
 
         let store = Self {
             client: Arc::new(client),
             collection_name: collection_name.to_string(),
             embedder: Arc::new(RwLock::new(embedder)),
-            embedding_dim: DEFAULT_EMBEDDING_DIM,
+            model,
+            embedding_dim: model.dimension(),
         };
 
         store.ensure_collection().await?;
@@ -135,16 +162,12 @@ impl QdrantStore {
         Ok(store)
     }
 
-    /// Create a new Qdrant store with custom embedding dimension.
+    /// Create a new Qdrant store with a custom embedding dimension.
     ///
-    /// Use this when you have a custom embedding model with a different
-    /// dimension than the default (384).
-    ///
-    /// # Arguments
-    ///
-    /// * `url` - Qdrant server URL
-    /// * `collection_name` - Name of the collection to use
-    /// * `embedding_dim` - Dimension of the embedding vectors
+    /// Prefer [`Self::with_model`] so the embedding model is explicit. This
+    /// method keeps historical API compatibility: it always loads the default
+    /// catalog model (`bge-small-en-v1.5`) but sets the collection size to
+    /// `embedding_dim`. Mismatching dim and model output will fail at upsert.
     ///
     /// # Errors
     ///
@@ -158,21 +181,27 @@ impl QdrantStore {
             .build()
             .map_err(|e| StorageError::connection(format!("Failed to connect to Qdrant: {e}")))?;
 
-        let embedder = TextEmbedding::try_new(
-            InitOptions::new(EmbeddingModel::BGESmallENV15).with_show_download_progress(false),
-        )
-        .map_err(|e| StorageError::backend(format!("Failed to initialize embedder: {e}")))?;
+        let model = SupportedEmbeddingModel::DEFAULT;
+        let embedder =
+            init_text_embedding(model).map_err(|e| StorageError::backend(e.to_string()))?;
 
         let store = Self {
             client: Arc::new(client),
             collection_name: collection_name.to_string(),
             embedder: Arc::new(RwLock::new(embedder)),
+            model,
             embedding_dim,
         };
 
         store.ensure_collection().await?;
 
         Ok(store)
+    }
+
+    /// Catalog embedding model bound to this store.
+    #[must_use]
+    pub const fn embedding_model(&self) -> SupportedEmbeddingModel {
+        self.model
     }
 
     /// Ensure the collection exists with proper configuration.
