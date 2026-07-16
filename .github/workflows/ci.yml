@@ -1,7 +1,12 @@
 name: CI
 
-# Manual only — no push/pull_request CI triggers
+# Triggered on push/PR; also manual.
+# Linux x64 → self-hosted Podman fleet; macOS/Windows matrix legs stay GitHub-hosted.
 on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
   workflow_dispatch:
 env:
   CARGO_TERM_COLOR: always

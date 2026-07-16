@@ -1,7 +1,11 @@
 name: Commitizen
 
-# Commitizen CI Contract v1 — manual pre-release conventional commit verification
+# Commitizen CI Contract v1 — conventional commit verification on PR/push + manual
 on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
