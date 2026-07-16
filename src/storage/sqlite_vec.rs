@@ -39,16 +39,75 @@
 //! }
 //! ```
 
-use crate::{AgentDomain, KnowledgeStore, LearningContext, Result, StorageError, VectorStore};
+use crate::embedding::cache::{QueryEmbeddingCache, DEFAULT_QUERY_CACHE_CAPACITY};
+use crate::embedding::{embed_batch, init_text_embedding, SupportedEmbeddingModel};
+use crate::{
+    AgentDomain, BatchKnowledgeStore, Error, KnowledgeStore, LearningContext, Result, StorageError,
+    VectorStore,
+};
 use async_trait::async_trait;
-use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
+use fastembed::TextEmbedding;
 use rusqlite::{params, Connection};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-/// Default embedding dimension for the default model (BAAI/bge-small-en-v1.5).
-const DEFAULT_EMBEDDING_DIM: usize = 384;
+const STORE_META_KEY_MODEL: &str = "embedding_model";
+const STORE_META_KEY_DIM: &str = "embedding_dim";
+
+/// Result of comparing persisted store metadata with the opening store configuration.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum StoreMetaOutcome {
+    /// Stored metadata matches (or was absent on an empty legacy DB and will be stamped).
+    Compatible,
+    /// Empty store without metadata: stamp these values.
+    Stamp { model: String, dim: usize },
+}
+
+/// Pure validation for embedding model/dimension binding (unit-testable without `FastEmbed`).
+fn validate_store_meta(
+    learning_context_rows: usize,
+    stored_model: Option<&str>,
+    stored_dim: Option<&str>,
+    expected_model: &str,
+    expected_dim: usize,
+) -> Result<StoreMetaOutcome> {
+    match (stored_model, stored_dim) {
+        (Some(model), Some(dim_str)) => {
+            if model != expected_model {
+                return Err(Error::invalid_config(format!(
+                    "database embedding model mismatch: expected '{expected_model}', found '{model}'"
+                )));
+            }
+            let stored_dim: usize = dim_str.parse().map_err(|_| {
+                Error::invalid_config(format!(
+                    "database store_meta '{STORE_META_KEY_DIM}' is not a valid usize: '{dim_str}'"
+                ))
+            })?;
+            if stored_dim != expected_dim {
+                return Err(Error::invalid_config(format!(
+                    "database embedding dimension mismatch: expected {expected_dim} for model '{expected_model}', found {stored_dim}"
+                )));
+            }
+            Ok(StoreMetaOutcome::Compatible)
+        }
+        (None, None) => {
+            if learning_context_rows > 0 {
+                return Err(Error::invalid_config(
+                    "database has learning contexts but no store_meta embedding_model/embedding_dim; \
+                     recreate the database file or use a new path per catalog model (mg/store-model-binding)",
+                ));
+            }
+            Ok(StoreMetaOutcome::Stamp {
+                model: expected_model.to_string(),
+                dim: expected_dim,
+            })
+        }
+        _ => Err(Error::invalid_config(
+            "database store_meta is incomplete: both embedding_model and embedding_dim must be set together",
+        )),
+    }
+}
 
 /// SQLite-based knowledge store with vector similarity search via sqlite-vec.
 ///
@@ -75,20 +134,25 @@ pub struct SqliteVecStore {
     conn: Arc<Mutex<Connection>>,
     /// Text embedding model.
     embedder: Arc<Mutex<TextEmbedding>>,
+    /// Catalog model bound to this database.
+    model: SupportedEmbeddingModel,
     /// Embedding dimension.
     embedding_dim: usize,
+    /// LRU cache for retrieve-query embeddings (text + model id).
+    query_embed_cache: Arc<Mutex<QueryEmbeddingCache>>,
 }
 
 impl std::fmt::Debug for SqliteVecStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SqliteVecStore")
+            .field("model", &self.model.as_str())
             .field("embedding_dim", &self.embedding_dim)
             .finish_non_exhaustive()
     }
 }
 
 impl SqliteVecStore {
-    /// Open an in-memory `SQLite` database with vector support.
+    /// Open an in-memory `SQLite` database with the default embedding model.
     ///
     /// This is useful for testing or temporary storage that doesn't need
     /// to persist across restarts.
@@ -103,15 +167,25 @@ impl SqliteVecStore {
     /// let store = SqliteVecStore::open_in_memory().await?;
     /// ```
     pub async fn open_in_memory() -> Result<Self> {
+        Self::open_in_memory_with_model(SupportedEmbeddingModel::DEFAULT).await
+    }
+
+    /// Open an in-memory database bound to a catalog embedding model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if embedder init or schema creation fails.
+    pub async fn open_in_memory_with_model(model: SupportedEmbeddingModel) -> Result<Self> {
         Self::open_with_connection(
             Connection::open_in_memory().map_err(|e| {
                 StorageError::connection(format!("Failed to open in-memory DB: {e}"))
             })?,
+            model,
         )
         .await
     }
 
-    /// Open a file-based `SQLite` database with vector support.
+    /// Open a file-based `SQLite` database with the default embedding model.
     ///
     /// Creates the database file if it doesn't exist. The schema will be
     /// automatically created on first open.
@@ -130,27 +204,51 @@ impl SqliteVecStore {
     /// let store = SqliteVecStore::open("./data/memories.db").await?;
     /// ```
     pub async fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
+        Self::open_with_model(path, SupportedEmbeddingModel::DEFAULT).await
+    }
+
+    /// Open a file-based database bound to a catalog embedding model.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the database cannot be opened or initialized.
+    pub async fn open_with_model<P: AsRef<Path>>(
+        path: P,
+        model: SupportedEmbeddingModel,
+    ) -> Result<Self> {
         Self::open_with_connection(
             Connection::open(path.as_ref())
                 .map_err(|e| StorageError::connection(format!("Failed to open DB: {e}")))?,
+            model,
         )
         .await
     }
 
-    /// Open with an existing connection.
-    async fn open_with_connection(conn: Connection) -> Result<Self> {
+    /// Catalog embedding model bound to this store.
+    #[must_use]
+    pub const fn embedding_model(&self) -> SupportedEmbeddingModel {
+        self.model
+    }
+
+    /// Open with an existing connection and catalog model.
+    async fn open_with_connection(
+        conn: Connection,
+        model: SupportedEmbeddingModel,
+    ) -> Result<Self> {
         // Log sqlite-vec extension status
         Self::load_vec_extension(&conn);
 
-        let embedder = TextEmbedding::try_new(
-            InitOptions::new(EmbeddingModel::BGESmallENV15).with_show_download_progress(false),
-        )
-        .map_err(|e| StorageError::backend(format!("Failed to initialize embedder: {e}")))?;
+        let embedder =
+            init_text_embedding(model).map_err(|e| StorageError::backend(e.to_string()))?;
 
         let store = Self {
             conn: Arc::new(Mutex::new(conn)),
             embedder: Arc::new(Mutex::new(embedder)),
-            embedding_dim: DEFAULT_EMBEDDING_DIM,
+            model,
+            embedding_dim: model.dimension(),
+            query_embed_cache: Arc::new(Mutex::new(QueryEmbeddingCache::with_capacity(
+                DEFAULT_QUERY_CACHE_CAPACITY,
+            ))),
         };
 
         store.ensure_schema().await?;
@@ -225,20 +323,140 @@ impl SqliteVecStore {
             [],
         );
 
+        Self::reconcile_store_meta(&conn, self.model, self.embedding_dim)?;
+
         Ok(())
     }
 
-    /// Generate embedding for text content.
+    /// Validate or stamp store metadata for embedding model binding (fail closed on legacy data).
+    fn reconcile_store_meta(
+        conn: &Connection,
+        model: SupportedEmbeddingModel,
+        embedding_dim: usize,
+    ) -> Result<()> {
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS store_meta (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )",
+            [],
+        )
+        .map_err(|e| StorageError::backend(format!("Failed to create store_meta table: {e}")))?;
+
+        let stored_model = Self::read_store_meta(conn, STORE_META_KEY_MODEL)?;
+        let stored_dim = Self::read_store_meta(conn, STORE_META_KEY_DIM)?;
+
+        match validate_store_meta(
+            Self::learning_context_count(conn)?,
+            stored_model.as_deref(),
+            stored_dim.as_deref(),
+            model.as_str(),
+            embedding_dim,
+        )? {
+            StoreMetaOutcome::Compatible => {}
+            StoreMetaOutcome::Stamp { model, dim } => {
+                Self::write_store_meta(conn, STORE_META_KEY_MODEL, &model)?;
+                Self::write_store_meta(conn, STORE_META_KEY_DIM, &dim.to_string())?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn learning_context_count(conn: &Connection) -> Result<usize> {
+        let count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM learning_contexts", [], |row| {
+                row.get(0)
+            })
+            .map_err(|e| StorageError::query(format!("Failed to count learning_contexts: {e}")))?;
+        Ok(count as usize)
+    }
+
+    fn read_store_meta(conn: &Connection, key: &str) -> Result<Option<String>> {
+        let result = conn.query_row(
+            "SELECT value FROM store_meta WHERE key = ?1",
+            params![key],
+            |row| row.get::<_, String>(0),
+        );
+        match result {
+            Ok(value) => Ok(Some(value)),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(StorageError::query(format!("Failed to read store_meta: {e}")).into()),
+        }
+    }
+
+    fn write_store_meta(conn: &Connection, key: &str, value: &str) -> Result<()> {
+        conn.execute(
+            "INSERT OR REPLACE INTO store_meta (key, value) VALUES (?1, ?2)",
+            params![key, value],
+        )
+        .map_err(|e| StorageError::write(format!("Failed to write store_meta: {e}")))?;
+        Ok(())
+    }
+
+    /// Generate embedding for document content (store path; not query-cached).
     async fn embed(&self, text: &str) -> Result<Vec<f32>> {
         let mut embedder = self.embedder.lock().await;
-        let embeddings = embedder
-            .embed(vec![text], None)
-            .map_err(|e| StorageError::backend(format!("Failed to generate embedding: {e}")))?;
-
+        let embeddings = embed_batch(&mut embedder, &[text])
+            .map_err(|e| StorageError::backend(e.to_string()))?;
         embeddings
             .into_iter()
             .next()
             .ok_or_else(|| StorageError::backend("No embedding generated").into())
+    }
+
+    /// Batch-embed multiple strings under one embedder lock.
+    async fn embed_batch_texts(&self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
+        let refs: Vec<&str> = texts.iter().map(String::as_str).collect();
+        let mut embedder = self.embedder.lock().await;
+        Ok(embed_batch(&mut embedder, &refs).map_err(|e| StorageError::backend(e.to_string()))?)
+    }
+
+    /// Embed a retrieve query, using the bounded LRU cache when possible.
+    async fn embed_query(&self, query: &str) -> Result<Vec<f32>> {
+        {
+            let mut cache = self.query_embed_cache.lock().await;
+            if let Some(hit) = cache.get(query, self.model) {
+                return Ok(hit);
+            }
+        }
+        let embedding = self.embed(query).await?;
+        let mut cache = self.query_embed_cache.lock().await;
+        cache.insert(query, self.model, embedding.clone());
+        Ok(embedding)
+    }
+
+    fn persist_row(
+        conn: &Connection,
+        key: &str,
+        experience: &LearningContext,
+        embedding_blob: &[u8],
+    ) -> Result<()> {
+        let context_json = serde_json::to_string(experience)
+            .map_err(|e| StorageError::write(format!("Failed to serialize context: {e}")))?;
+        conn.execute(
+            "INSERT OR REPLACE INTO learning_contexts (key, context_json, domain, content, importance, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![
+                key,
+                context_json,
+                experience.domain.as_str(),
+                experience.content,
+                experience.importance,
+                experience.timestamp.to_rfc3339(),
+            ],
+        )
+        .map_err(|e| StorageError::write(format!("Failed to insert context: {e}")))?;
+        conn.execute(
+            "INSERT OR REPLACE INTO context_embeddings (key, embedding) VALUES (?1, ?2)",
+            params![key, embedding_blob],
+        )
+        .map_err(|e| StorageError::write(format!("Failed to insert embedding: {e}")))?;
+        let _ = conn.execute(
+            "INSERT OR REPLACE INTO vec_contexts (key, embedding) VALUES (?1, ?2)",
+            params![key, embedding_blob],
+        );
+        Ok(())
     }
 
     /// Convert embedding to blob format for storage.
@@ -255,21 +473,25 @@ impl SqliteVecStore {
             .collect()
     }
 
-    /// Calculate cosine similarity between two vectors.
-    fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
+    /// Calculate cosine similarity between two vectors (errors on length mismatch).
+    fn cosine_similarity(a: &[f32], b: &[f32]) -> Result<f32> {
         if a.len() != b.len() {
-            return 0.0;
+            return Err(Error::invalid_config(format!(
+                "stored embedding dimension mismatch: query vector length {} vs stored {}",
+                a.len(),
+                b.len()
+            )));
         }
 
         let dot_product: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
         let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
         let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
 
-        if norm_a == 0.0 || norm_b == 0.0 {
+        Ok(if norm_a == 0.0 || norm_b == 0.0 {
             0.0
         } else {
             dot_product / (norm_a * norm_b)
-        }
+        })
     }
 
     /// Check if the vec0 virtual table is available.
@@ -289,40 +511,8 @@ impl KnowledgeStore<LearningContext> for SqliteVecStore {
     async fn store_experience(&self, key: &str, experience: LearningContext) -> Result<()> {
         let embedding = self.embed(&experience.content).await?;
         let embedding_blob = Self::embedding_to_blob(&embedding);
-        let context_json = serde_json::to_string(&experience)
-            .map_err(|e| StorageError::write(format!("Failed to serialize context: {e}")))?;
-
         let conn = self.conn.lock().await;
-
-        // Insert or replace in main table
-        conn.execute(
-            "INSERT OR REPLACE INTO learning_contexts (key, context_json, domain, content, importance, created_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-            params![
-                key,
-                context_json,
-                experience.domain.as_str(),
-                experience.content,
-                experience.importance,
-                experience.timestamp.to_rfc3339(),
-            ],
-        )
-        .map_err(|e| StorageError::write(format!("Failed to insert context: {e}")))?;
-
-        // Insert or replace in embeddings table
-        conn.execute(
-            "INSERT OR REPLACE INTO context_embeddings (key, embedding) VALUES (?1, ?2)",
-            params![key, embedding_blob],
-        )
-        .map_err(|e| StorageError::write(format!("Failed to insert embedding: {e}")))?;
-
-        // Try to insert into vec table if available
-        let _ = conn.execute(
-            "INSERT OR REPLACE INTO vec_contexts (key, embedding) VALUES (?1, ?2)",
-            params![key, embedding_blob],
-        );
-
-        Ok(())
+        Self::persist_row(&conn, key, &experience, &embedding_blob)
     }
 
     async fn retrieve_context(
@@ -331,7 +521,7 @@ impl KnowledgeStore<LearningContext> for SqliteVecStore {
         limit: usize,
         domain_filter: Option<AgentDomain>,
     ) -> Result<Vec<LearningContext>> {
-        let query_embedding = self.embed(query).await?;
+        let query_embedding = self.embed_query(query).await?;
         let has_vec = self.has_vec_table().await;
 
         if has_vec {
@@ -547,15 +737,15 @@ impl SqliteVecStore {
         };
 
         // Calculate similarities and sort
-        let mut scored: Vec<(f32, LearningContext)> = rows
-            .into_iter()
-            .filter_map(|(json, blob)| {
-                let context: LearningContext = serde_json::from_str(&json).ok()?;
-                let embedding = Self::blob_to_embedding(&blob);
-                let similarity = Self::cosine_similarity(query_embedding, &embedding);
-                Some((similarity, context))
-            })
-            .collect();
+        let mut scored: Vec<(f32, LearningContext)> = Vec::new();
+        for (json, blob) in rows {
+            let context: LearningContext = serde_json::from_str(&json).map_err(|e| {
+                StorageError::query(format!("Failed to deserialize context during search: {e}"))
+            })?;
+            let embedding = Self::blob_to_embedding(&blob);
+            let similarity = Self::cosine_similarity(query_embedding, &embedding)?;
+            scored.push((similarity, context));
+        }
 
         // Sort by similarity descending
         scored.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
@@ -565,6 +755,46 @@ impl SqliteVecStore {
             scored.into_iter().take(limit).map(|(_, ctx)| ctx).collect();
 
         Ok(contexts)
+    }
+}
+
+#[async_trait]
+impl BatchKnowledgeStore<LearningContext> for SqliteVecStore {
+    async fn store_batch(&self, items: Vec<(String, LearningContext)>) -> Result<()> {
+        if items.is_empty() {
+            return Ok(());
+        }
+        let texts: Vec<String> = items.iter().map(|(_, ctx)| ctx.content.clone()).collect();
+        let embeddings = self.embed_batch_texts(&texts).await?;
+        let conn = self.conn.lock().await;
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| StorageError::write(format!("Failed to start transaction: {e}")))?;
+        for ((key, experience), embedding) in items.into_iter().zip(embeddings) {
+            let blob = Self::embedding_to_blob(&embedding);
+            Self::persist_row(&tx, &key, &experience, &blob)?;
+        }
+        tx.commit()
+            .map_err(|e| StorageError::write(format!("Failed to commit batch: {e}")))?;
+        Ok(())
+    }
+
+    async fn delete_batch(&self, keys: &[String]) -> Result<()> {
+        if keys.is_empty() {
+            return Ok(());
+        }
+        let conn = self.conn.lock().await;
+        for key in keys {
+            let _ = conn.execute("DELETE FROM vec_contexts WHERE key = ?1", params![key]);
+            conn.execute(
+                "DELETE FROM context_embeddings WHERE key = ?1",
+                params![key],
+            )
+            .map_err(|e| StorageError::delete(format!("Failed to delete embedding: {e}")))?;
+            conn.execute("DELETE FROM learning_contexts WHERE key = ?1", params![key])
+                .map_err(|e| StorageError::delete(format!("Failed to delete context: {e}")))?;
+        }
+        Ok(())
     }
 }
 
@@ -596,20 +826,28 @@ mod tests {
         // Same vectors should have similarity 1.0
         let a = vec![1.0_f32, 0.0, 0.0];
         let b = vec![1.0_f32, 0.0, 0.0];
-        let sim = SqliteVecStore::cosine_similarity(&a, &b);
+        let sim = SqliteVecStore::cosine_similarity(&a, &b).unwrap();
         assert!((sim - 1.0).abs() < 0.0001);
 
         // Orthogonal vectors should have similarity 0.0
         let a = vec![1.0_f32, 0.0, 0.0];
         let b = vec![0.0_f32, 1.0, 0.0];
-        let sim = SqliteVecStore::cosine_similarity(&a, &b);
+        let sim = SqliteVecStore::cosine_similarity(&a, &b).unwrap();
         assert!(sim.abs() < 0.0001);
 
         // Opposite vectors should have similarity -1.0
         let a = vec![1.0_f32, 0.0, 0.0];
         let b = vec![-1.0_f32, 0.0, 0.0];
-        let sim = SqliteVecStore::cosine_similarity(&a, &b);
+        let sim = SqliteVecStore::cosine_similarity(&a, &b).unwrap();
         assert!((sim + 1.0).abs() < 0.0001);
+    }
+
+    #[test]
+    fn test_cosine_similarity_length_mismatch_errors() {
+        let a = vec![1.0_f32, 0.0, 0.0];
+        let b = vec![1.0_f32, 0.0];
+        let err = SqliteVecStore::cosine_similarity(&a, &b).unwrap_err();
+        assert!(err.to_string().contains("dimension mismatch"));
     }
 
     #[test]
@@ -617,7 +855,7 @@ mod tests {
         // Similarity should be scale-invariant
         let a = vec![1.0_f32, 2.0, 3.0];
         let b = vec![2.0_f32, 4.0, 6.0]; // Same direction, different magnitude
-        let sim = SqliteVecStore::cosine_similarity(&a, &b);
+        let sim = SqliteVecStore::cosine_similarity(&a, &b).unwrap();
         assert!((sim - 1.0).abs() < 0.0001);
     }
 
@@ -625,7 +863,7 @@ mod tests {
     fn test_cosine_similarity_empty() {
         let a: Vec<f32> = vec![];
         let b: Vec<f32> = vec![];
-        let sim = SqliteVecStore::cosine_similarity(&a, &b);
+        let sim = SqliteVecStore::cosine_similarity(&a, &b).unwrap();
         assert!(sim.abs() < f32::EPSILON);
     }
 
@@ -633,8 +871,94 @@ mod tests {
     fn test_cosine_similarity_zero_vector() {
         let a = vec![0.0_f32, 0.0, 0.0];
         let b = vec![1.0_f32, 2.0, 3.0];
-        let sim = SqliteVecStore::cosine_similarity(&a, &b);
+        let sim = SqliteVecStore::cosine_similarity(&a, &b).unwrap();
         assert!(sim.abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_validate_store_meta_stamp_empty() {
+        let outcome = validate_store_meta(0, None, None, "bge-small-en-v1.5", 384).unwrap();
+        assert_eq!(
+            outcome,
+            StoreMetaOutcome::Stamp {
+                model: "bge-small-en-v1.5".to_string(),
+                dim: 384
+            }
+        );
+    }
+
+    #[test]
+    fn test_validate_store_meta_legacy_with_rows_fails() {
+        let err = validate_store_meta(3, None, None, "bge-small-en-v1.5", 384).unwrap_err();
+        assert!(err.to_string().contains("store_meta"));
+    }
+
+    #[test]
+    fn test_validate_store_meta_model_mismatch() {
+        let err = validate_store_meta(
+            1,
+            Some("all-minilm-l6-v2"),
+            Some("384"),
+            "bge-small-en-v1.5",
+            384,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("model mismatch"));
+    }
+
+    #[test]
+    fn test_validate_store_meta_dim_mismatch() {
+        let err = validate_store_meta(
+            1,
+            Some("bge-small-en-v1.5"),
+            Some("768"),
+            "bge-small-en-v1.5",
+            384,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("dimension mismatch"));
+    }
+
+    #[tokio::test]
+    async fn test_reconcile_store_meta_stamps_empty_db() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute(
+            "CREATE TABLE learning_contexts (key TEXT PRIMARY KEY, context_json TEXT NOT NULL, domain TEXT NOT NULL, content TEXT NOT NULL, importance REAL NOT NULL, created_at TEXT NOT NULL)",
+            [],
+        )
+        .unwrap();
+        SqliteVecStore::reconcile_store_meta(&conn, SupportedEmbeddingModel::BgeSmallEnV15, 384)
+            .unwrap();
+        let model: String = conn
+            .query_row(
+                "SELECT value FROM store_meta WHERE key = ?1",
+                params![STORE_META_KEY_MODEL],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(model, "bge-small-en-v1.5");
+    }
+
+    #[tokio::test]
+    async fn test_reconcile_store_meta_rejects_legacy_data() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute(
+            "CREATE TABLE learning_contexts (key TEXT PRIMARY KEY, context_json TEXT NOT NULL, domain TEXT NOT NULL, content TEXT NOT NULL, importance REAL NOT NULL, created_at TEXT NOT NULL)",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO learning_contexts (key, context_json, domain, content, importance, created_at) VALUES ('k', '{}', 'general', 'x', 0.5, '2020-01-01T00:00:00Z')",
+            [],
+        )
+        .unwrap();
+        let err = SqliteVecStore::reconcile_store_meta(
+            &conn,
+            SupportedEmbeddingModel::BgeSmallEnV15,
+            384,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("store_meta"));
     }
 
     #[tokio::test]
@@ -841,6 +1165,27 @@ mod tests {
     #[ignore = "requires embedding model download"]
     async fn test_embedding_dimension() {
         let store = SqliteVecStore::open_in_memory().await.unwrap();
-        assert_eq!(store.embedding_dimension(), DEFAULT_EMBEDDING_DIM);
+        assert_eq!(
+            store.embedding_dimension(),
+            SupportedEmbeddingModel::DEFAULT.dimension()
+        );
+        assert_eq!(
+            store.embedding_model(),
+            SupportedEmbeddingModel::BgeSmallEnV15
+        );
+    }
+
+    #[tokio::test]
+    #[ignore = "requires embedding model download"]
+    async fn test_open_with_minilm_model() {
+        let store =
+            SqliteVecStore::open_in_memory_with_model(SupportedEmbeddingModel::AllMiniLmL6V2)
+                .await
+                .unwrap();
+        assert_eq!(
+            store.embedding_model(),
+            SupportedEmbeddingModel::AllMiniLmL6V2
+        );
+        assert_eq!(store.embedding_dimension(), 384);
     }
 }

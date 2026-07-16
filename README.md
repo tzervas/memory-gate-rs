@@ -156,25 +156,94 @@ use memory_gate_rs::storage::InMemoryStore;
 let store = InMemoryStore::new();
 ```
 
+### Embedding models (Qdrant / sqlite-vec)
+
+Vector backends share a stable catalog (`mg/embed-catalog`) with the Python `memory-gate` package. **Use a separate Qdrant collection name or SQLite file per catalog model** — never reuse the same collection/DB path after switching models (including two 384-d models such as MiniLM vs BGE-small). Opens fail closed when vector dimension or stamped model metadata does not match the configured model.
+
+| Stable ID | Dimension | Notes |
+|-----------|-----------|-------|
+| `all-minilm-l6-v2` | 384 | Cross-port parity / lighter latency |
+| `bge-small-en-v1.5` | 384 | **Default** for `new()` / `open()` (backward compatible) |
+| `bge-base-en-v1.5` | 768 | Higher accuracy, larger vectors |
+
+Parse IDs with `SupportedEmbeddingModel::parse("bge-base-en-v1.5")?` or pass a [`SupportedEmbeddingModel`](https://docs.rs/memory-gate-rs/latest/memory_gate_rs/enum.SupportedEmbeddingModel.html) directly.
+
 ### Qdrant (feature: `qdrant`)
 
 Production vector database with semantic search:
 
 ```rust
-use memory_gate_rs::storage::QdrantStore;
+use memory_gate_rs::{storage::QdrantStore, SupportedEmbeddingModel};
 
+// Default: bge-small-en-v1.5 (384-d)
 let store = QdrantStore::new("http://localhost:6334", "memories").await?;
+
+// Explicit model (e.g. parity with Python on MiniLM) — use a distinct collection name
+let store = QdrantStore::with_model(
+    "http://localhost:6334",
+    "memories_minilm",
+    SupportedEmbeddingModel::AllMiniLmL6V2,
+)
+.await?;
 ```
+
+`retrieve_context` warms a bounded LRU **query embedding cache** (same text + model id as cold embed); first query per key pays embed cost, repeats are warm.
 
 ### SQLite + Vector (feature: `sqlite-vec`)
 
 Embedded vector storage with SQLite:
 
 ```rust
-use memory_gate_rs::storage::SqliteVecStore;
+use memory_gate_rs::{storage::SqliteVecStore, SupportedEmbeddingModel};
 
-let store = SqliteVecStore::new("./memory.db").await?;
+let store = SqliteVecStore::open("./memory.db").await?;
+
+// One DB file per model (e.g. memory_bge_base.db vs memory_minilm.db)
+let store = SqliteVecStore::open_with_model(
+    "./memory_bge_base.db",
+    SupportedEmbeddingModel::BgeBaseEnV15,
+)
+.await?;
+
+let store = SqliteVecStore::open_in_memory_with_model(
+    SupportedEmbeddingModel::default(),
+)
+.await?;
 ```
+
+### Production backend choice
+
+| Deployment | Recommended backend | Rationale |
+|------------|---------------------|-----------|
+| Single process / edge / tests | `sqlite-vec` | Embedded DB, no external service; good Wave B baseline in `vector_storage_benchmarks` |
+| Multi-tenant / high QPS search | `qdrant` | Dedicated vector service; run benches locally with Qdrant at `QDRANT_URL` (default `http://127.0.0.1:6334`) when measuring that path |
+
+Both backends use the same [`SupportedEmbeddingModel`](https://docs.rs/memory-gate-rs/latest/memory_gate_rs/enum.SupportedEmbeddingModel.html) catalog (`mg/embed-catalog@STABLE`); pick one model per collection or database.
+
+## Benchmarks
+
+Criterion harnesses measure store/retrieve latency for regression tracking (Wave B perf).
+
+| Bench target | Features | What it measures |
+|--------------|----------|------------------|
+| `storage_benchmarks` | default (`in-memory`) | `MemoryGateway` + `InMemoryStore` |
+| `vector_storage_benchmarks` | `sqlite-vec` | `SqliteVecStore::open_in_memory_with_model`, store, retrieve |
+| `vsa_benchmarks` | default crate features | VSA / holographic ops |
+
+There is **no** dedicated Qdrant Criterion bench in-tree yet; compare Qdrant operationally or add a local bench when `qdrant` is enabled. Vector regression baselines today are **sqlite-vec** via `vector_storage_benchmarks`.
+
+```bash
+# Default in-memory (CI-friendly compile check)
+cargo bench --bench storage_benchmarks --no-run
+
+# Vector backend baselines (compile; first full run downloads embedding weights)
+cargo bench --bench vector_storage_benchmarks --no-run --features sqlite-vec
+
+# Optional: skip cold-open bench when re-measuring store/retrieve only
+MEMORY_GATE_SKIP_HEAVY_BENCH=1 cargo bench --bench vector_storage_benchmarks --features sqlite-vec
+```
+
+Full embedding benchmark runs are intentionally **not** part of CI (model download + GPU/CPU cost). Use `--no-run` in pipelines and run full benches locally before/after Wave B storage changes.
 
 ## Metrics (feature: `metrics`)
 

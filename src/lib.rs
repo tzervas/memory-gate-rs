@@ -90,6 +90,7 @@
 //! ## Modules
 //!
 //! - [`adapters`]: Memory adapters for knowledge transformation pipelines
+//! - [`embedding`]: Shared multi-model embedding catalog (cross-port with Python)
 //! - [`storage`]: Pluggable storage backends for persistence
 //! - [`agents`]: Base agent implementations with memory integration
 //! - [`metrics`]: Prometheus-compatible observability metrics
@@ -130,11 +131,13 @@ mod types;
 
 pub mod adapters;
 pub mod agents;
+pub mod embedding;
 pub mod metrics;
 pub mod storage;
 pub mod vsa;
 
 // Re-export core types
+pub use embedding::SupportedEmbeddingModel;
 pub use error::{Error, Result, StorageError};
 pub use gateway::MemoryGateway;
 pub use traits::{
@@ -151,6 +154,7 @@ pub use types::{AgentDomain, ConsolidationStats, GatewayConfig, LearningContext}
 pub mod prelude {
     pub use crate::adapters::PassthroughAdapter;
     pub use crate::agents::BaseMemoryAgent;
+    pub use crate::embedding::SupportedEmbeddingModel;
     pub use crate::error::{Error, Result};
     pub use crate::gateway::MemoryGateway;
     pub use crate::storage::InMemoryStore;
