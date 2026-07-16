@@ -251,13 +251,13 @@ Wave C locks **recall@5** on a fixed golden corpus so vector backend and embed/c
 
 **Local gate:** `./scripts/check.sh` (required before merge).
 
-**Golden integration test** (after L1-GOLDEN lands; downloads embedding weights):
+**Golden integration test** (sqlite-vec + FastEmbed; downloads weights on first run). Default `./scripts/check.sh` does **not** run this (it is `#[ignore]`); run before merging embed/storage changes:
 
 ```bash
 cargo test --features sqlite-vec --test golden_recall -- --ignored --nocapture
 ```
 
-Python `memory-gate` is **frozen** for product work; accuracy and golden ownership are **RS-only**.
+Fixture pins `baseline_mean_recall_at_k` and `min_mean_recall_at_k` (≥ baseline × 0.98). Python `memory-gate` is **frozen**; accuracy ownership is **RS-only**.
 
 ## Integration roadmap
 

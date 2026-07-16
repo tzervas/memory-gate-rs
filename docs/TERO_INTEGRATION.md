@@ -7,6 +7,22 @@ Wave C delivers the Rust canonical runtime, golden recall acceptance, and local 
 
 ---
 
+## Hard prerequisite before any tero ↔ memory-gate integration
+
+**Mycelium is a separate language project.** It must not ride along as an accidental monorepo inside `tero-rs`.
+
+Before implementing memory-gate-rs integration (or expanding tero-mcp consumers):
+
+1. **Inventory** every `mycelium-*` path dependency / workspace member in `tero-rs`.
+2. **Decide per crate:** required for tero’s public indexing/API surface, or extraction residue.
+3. **Purge wholesale** anything not strictly necessary — prefer **published crates / thin optional deps** over vendoring the Mycelium core language stack.
+4. **History hygiene:** if mycelium cores were never needed, they should be **removed from the tero-rs tree** (and ideally from ongoing history via a deliberate cleanup PR; do not “capture all mycelium core crates” as the integration path).
+5. Capability reuse (e.g. VSA ideas) must be **intentional adapters**, not wholesale crate embedding.
+
+Workspace note (2026-07 inventory snapshot under `/root/git/workspace/tero-rs`): prior strip removed 40 non-dep mycelium crates, but **~16 `mycelium-*` crates remain vendored** as path deps (`mycelium-doc`, `mycelium-vsa`, and transitive language cores). Re-validate necessity before integration work; default posture is **rip out unless proven required**.
+
+---
+
 ## Component roles
 
 | Layer | Repo / surface | Responsibility |

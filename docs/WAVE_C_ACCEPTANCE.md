@@ -3,7 +3,7 @@
 **Status:** Living (Wave C delivery)  
 **Canonical runtime:** **memory-gate-rs only** — the Python `memory-gate` package is a **frozen mirror** after embedding parity (catalog + fail-closed store binding). Wave C accuracy, golden recall, and further perf work belong on Rust only.
 
-**Interface bulletin:** `mg/golden-recall` (workspace handoff; DRAFT → STABLE when golden PR lands). This doc does not invent perf numbers; baselines are recorded in the golden fixture or updated here when L1-GOLDEN publishes them.
+**Interface bulletin:** `mg/golden-recall@STABLE`.
 
 ---
 
@@ -11,28 +11,35 @@
 
 | Area | Criterion | Notes |
 |------|-----------|--------|
-| **Accuracy** | Mean **recall@5** on the fixed golden corpus must not drop **more than 2%** versus the baseline recorded in the fixture or in this doc | Per-query recall@k = \|retrieved ∩ relevant\| / \|relevant\|; report mean over queries. Fixture `model_id` must be a catalog stable ID (`mg/embed-catalog@STABLE`). |
-| **Store binding** | Golden runs use one in-memory or sqlite-vec store per model; reopen/mismatch behavior follows `mg/store-model-binding@STABLE` | No mixed dimensions or silent model reuse on the same DB/collection path. |
+| **Accuracy** | Mean **recall@5** on the fixed golden corpus must not drop **more than 2% relative** versus `baseline_mean_recall_at_k` in the fixture | Implemented as `mean >= min_mean_recall_at_k` where `min_mean_recall_at_k >= baseline * 0.98`. Per-query recall@k = \|retrieved ∩ relevant\| / \|relevant\| (unique IDs). Fixture `model_id` is catalog stable ID `all-minilm-l6-v2`. |
+| **Store binding** | Golden accuracy path uses **sqlite-vec + FastEmbed** (`open_in_memory_with_model`) | In-memory substring store is **not** used for golden accuracy. Binding follows `mg/store-model-binding@STABLE`. |
 | **Metric helpers** | Pure recall@k logic is unit-tested **without** FastEmbed | Always run in default `cargo test` / `./scripts/check.sh`. |
-| **Full embed golden** | Integration test loads fixture, ingests documents, runs retrieve@k, asserts threshold | May be `#[ignore]` in CI (model download + CPU cost); operators run explicitly (see below). |
+| **Full embed golden** | Integration test loads fixture, validates hygiene, ingests, retrieve@k, asserts floor | `#[ignore]` in default CI; operators **must** run `--ignored` before merge of embed/storage changes. |
 
-### Artifacts (L1-GOLDEN)
+### Fixture fields (v1)
 
-- `tests/fixtures/golden_corpus.json` (or equivalent under `tests/fixtures/`)
-- `tests/golden_recall.rs` — sqlite-vec path, threshold vs baseline
-- Eval helpers under `src/eval/` as needed (owned by golden-recall workstream)
+| Field | Role |
+|-------|------|
+| `baseline_mean_recall_at_k` | Pinned green mean from an authoritative run |
+| `min_mean_recall_at_k` | Pass floor (≥ baseline × 0.98) |
+| `model_id` | Catalog ID (`all-minilm-l6-v2`) |
+| `k` | Top-k (5) |
+
+### Artifacts
+
+- `tests/fixtures/golden_corpus.json`
+- `tests/golden_recall.rs` — sqlite-vec path
+- `src/eval/` — pure metrics
 
 ---
 
 ## Aspirational perf goals (not Wave C ship blockers)
 
-These come from the performance handoff and README (query embedding LRU). They guide follow-on tuning and benches; **failure to meet them does not block Wave C** if accuracy and local gates pass.
-
 | Goal | Draft target | Context |
 |------|--------------|---------|
-| Warm single retrieve | p95 **< 50 ms** @ ~10k docs | CPU, `all-minilm-l6-v2` (or agreed golden model), **cached** query embed (repeat query text + model id) |
-| Batch ingest | ≥ **10×** throughput vs sequential single upsert @ 100 items | Wave B batch path; measure locally with Criterion / custom harness |
-| Bench honesty | Document **cold vs warm** retrieve when reporting latency | First query per key pays embed cost; repeats hit LRU (see `vector_storage_benchmarks` / reviews) |
+| Warm single retrieve | p95 **< 50 ms** @ ~10k docs | CPU, cached query embed |
+| Batch ingest | ≥ **10×** vs sequential @ 100 items | Wave B batch path |
+| Bench honesty | Document **cold vs warm** retrieve | Query embed LRU |
 
 Do not cite unpublished bench numbers as release guarantees.
 
@@ -40,29 +47,16 @@ Do not cite unpublished bench numbers as release guarantees.
 
 ## Local gates (required before merge)
 
-From [AGENTS.md](../AGENTS.md) and [CONTRIBUTING.md](../CONTRIBUTING.md):
-
 ```bash
 cd memory-gate-rs
 ./scripts/check.sh
 ```
 
-`check.sh` runs: `fmt --check`, `clippy -D warnings`, `doc -D warnings`, `build --all-features`, `test --all-features`. This is the **required** pre-merge gate for Wave C doc + code delivery on this repo.
-
-Optional fix mode: `./scripts/check.sh --fix` (applies `cargo fmt`).
-
----
-
-## Golden recall test (embedding integration)
-
-Default CI may skip full embed runs. After L1-GOLDEN lands, run the ignored integration test locally (downloads embedding weights on first run):
+For accuracy-sensitive changes, also:
 
 ```bash
-cd memory-gate-rs
 cargo test --features sqlite-vec --test golden_recall -- --ignored --nocapture
 ```
-
-Pin the fixture `model_id` explicitly (golden suite uses **`all-minilm-l6-v2`** for cross-port parity discipline; vector default `BgeSmallEnV15` remains the RS `new()`/`open()` default for backward compatibility).
 
 ---
 
@@ -70,12 +64,11 @@ Pin the fixture `model_id` explicitly (golden suite uses **`all-minilm-l6-v2`** 
 
 - **tero-rs** / **tero-mcp** crate wiring or MCP binary (WS-14) — see [TERO_INTEGRATION.md](TERO_INTEGRATION.md)
 - Python golden ownership or new Python product features
-- Publishing false or placeholder recall@5 / latency SLOs without a recorded baseline
+- Shipping without a recorded baseline (baseline is in the fixture)
 
 ---
 
 ## References
 
-- [README.md](../README.md) — vector backends, embedding catalog, benchmarks
-- [TERO_INTEGRATION.md](TERO_INTEGRATION.md) — post-Wave C integration sketch
-- Workspace: `work/bulletins/mg-golden-recall.md`, `work/memory-gate-wave-status.md`, `work/memory-gate-performance-handoff.md`
+- [README.md](../README.md)
+- [TERO_INTEGRATION.md](TERO_INTEGRATION.md)
