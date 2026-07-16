@@ -119,6 +119,59 @@ pub enum AgentDomain {
 Domain filtering in `retrieve_context(..., Some(AgentDomain::Tero))` enables scoped memory without bloat (core to mint vision).
 ```
 
+### Integration facade (tero-rs consumers)
+
+Contract: **`join/mg-facade@STABLE`** (see workspace bulletin `join-surfaces-tero-mg-mcp`).  
+tero-rs should depend on this documented surface — not private modules.
+
+```rust
+use memory_gate_rs::{
+    facade::{for_tero_learn, learn, retrieve, ProdMemoryConfig},
+    storage::InMemoryStore,
+    GatewayConfig, AgentDomain,
+};
+
+#[cfg(feature = "sqlite-vec")]
+use memory_gate_rs::facade::open_prod_sqlite;
+
+#[tokio::main]
+async fn main() -> memory_gate_rs::Result<()> {
+    let prod = ProdMemoryConfig::default(); // bge-small-en-v1.5
+    let _ = prod.sqlite_path_hint(); // ~/.tero/memory-gate/tero-memories.db
+
+    let gateway = memory_gate_rs::facade::gateway_with_store(
+        InMemoryStore::new(),
+        GatewayConfig::default(),
+    );
+
+    let ctx = for_tero_learn(
+        "Indexed fact from L1",
+        "doc#section-1",
+        Some(0.9),
+        Some("/path/to/tero-index.json"),
+    );
+    learn(&gateway, ctx, None).await?;
+
+    let hits = retrieve(
+        &gateway,
+        "indexed fact",
+        Some(5),
+        Some(AgentDomain::Tero),
+    )
+    .await?;
+    assert!(!hits.is_empty());
+    Ok(())
+}
+```
+
+| Helper | Role |
+|--------|------|
+| `TeroMemoryMeta` / `build_tero_metadata_map` | `source=tero-l1`, `tero_anchors`, optional `tero_index` |
+| `for_tero_learn` | `LearningContext` on `AgentDomain::Tero` with metadata |
+| `ProdMemoryConfig` / `IntegrationConfig` | Default embedding model + path/collection hints |
+| `open_prod_sqlite` (`sqlite-vec`) | `SqliteVecStore::open_with_model` with prod defaults |
+| `learn` / `retrieve` / `consolidate_once` | Thin wrappers over `MemoryGateway` methods |
+
 ### Memory Gateway
 
 Central orchestrator for learning and memory operations:

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - M1 domain/facade (mint kickoff)
 
+### Added
+- **`join/mg-facade` integration module** (`memory_gate_rs::facade`): `TeroMemoryMeta`, `for_tero_learn`, `ProdMemoryConfig` / `IntegrationConfig`, async `learn` / `retrieve` / `consolidate_once` wrappers, `open_prod_sqlite` (`sqlite-vec`); README section for tero-rs consumers.
+
 ### Changed
 - Stop tracking tero-rs correction/integration design docs in this repo (owned by tero-rs itself).
 
