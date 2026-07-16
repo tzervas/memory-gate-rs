@@ -1,0 +1,29 @@
+name: Commitizen
+
+# Commitizen CI Contract v1 — manual pre-release conventional commit verification
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cz-check:
+    name: Conventional Commits Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Commitizen
+        run: pip install 'commitizen~=4.8.0'
+
+      - name: Verify conventional commits
+        run: cz check --rev-range HEAD~1..HEAD

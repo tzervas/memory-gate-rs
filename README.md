@@ -288,6 +288,10 @@ Citations: tero memory-gate-rs `readme--agent-domains`, kickoffs/mint.md (M1 tab
 Post #26: Merged dev (4fb2c40), main land + propagate. Cabal W2: shared schemas + facade. See wsfull-wave-2026-07-09-compact.md, WORKSPACE_CABAL_TERO_READINESS.md (tero-cited M1/W2). Append-only + tero-first.
 ```
 
+## Versioning
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) and uses [Commitizen](https://commitizen-tools.github.io/commitizen/) for release versioning. Version is tracked in `.cz.toml` and `Cargo.toml`. Before release, dispatch the **Commitizen** workflow (Actions → Commitizen → Run workflow) to verify commits on the current branch.
+
 ## License
 
 MIT License - see [LICENSE-MIT](LICENSE-MIT)
