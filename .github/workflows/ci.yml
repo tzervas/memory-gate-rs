@@ -102,8 +102,6 @@ jobs:
 
   docs:
     name: Documentation
-    # Non-blocking: openssl-sys (via all-features) may be unavailable without sudo.
-    continue-on-error: true
     runs-on: [self-hosted, linux, x64, podman]
     steps:
       - uses: actions/checkout@v6
@@ -112,14 +110,15 @@ jobs:
       - name: Build documentation
         run: |
           set -euo pipefail
+          # all-features pulls qdrant/fastembed → openssl-sys; no sudo apt on self-hosted.
           if pkg-config --exists openssl 2>/dev/null; then
-            cargo doc --no-deps --all-features
+            RUSTDOCFLAGS='-D warnings' cargo doc --no-deps --all-features
           else
-            echo "openssl headers missing — docs with default features only"
+            echo "openssl headers missing — default-features docs (no -D warnings;"
+            echo "feature-gated rustdoc links to QdrantStore/SqliteVecStore are expected)"
+            # Allow unresolved links to feature-gated items when those features are off.
             cargo doc --no-deps
           fi
-        env:
-          RUSTDOCFLAGS: -D warnings
 
   coverage:
     name: Code Coverage
@@ -142,7 +141,11 @@ jobs:
             cargo llvm-cov --lcov --output-path lcov.info
           fi
       - name: Upload coverage to Codecov
+        if: success()
+        continue-on-error: true
         uses: codecov/codecov-action@v6
         with:
           files: lcov.info
           fail_ci_if_error: false
+          # Self-hosted images often lack gpg; skip signature validation.
+          skip_validation: true
