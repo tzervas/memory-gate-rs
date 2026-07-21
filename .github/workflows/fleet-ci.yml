@@ -55,10 +55,31 @@ jobs:
     runs-on: [self-hosted, linux, x64, podman]
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Ensure cargo on PATH
+        run: |
+          set -euo pipefail
+          export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+            # shellcheck disable=SC1091
+            . "${CARGO_HOME:-$HOME/.cargo}/env"
+          fi
+          rustc --version
+          cargo --version
+          echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> "$GITHUB_PATH"
       - name: cargo check
-        run: cargo check --workspace --all-targets
+        run: |
+          set -euo pipefail
+          export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+          export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}"
+          cargo check --workspace --all-targets
       - name: cargo test
-        run: cargo test --workspace
+        run: |
+          set -euo pipefail
+          export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+          export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}"
+          cargo test --workspace
 
   python:
     name: python lint/test

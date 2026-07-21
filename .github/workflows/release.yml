@@ -12,31 +12,20 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Multi-OS release deferred to self-hosted capacity.
   build:
     name: Build (${{ matrix.target }})
-    runs-on: ${{ matrix.os == 'macos-latest' && 'macos-latest' || matrix.os == 'windows-latest' && 'windows-latest' || fromJSON('["self-hosted", "linux", "x64", "podman"]') }}
+    runs-on: [self-hosted, linux, x64, podman]
     strategy:
       fail-fast: false
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
             archive: tar.gz
           - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
             archive: tar.gz
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
             archive: tar.gz
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            archive: tar.gz
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            archive: tar.gz
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-            archive: zip
 
     steps:
       - uses: actions/checkout@v6
@@ -78,22 +67,12 @@ jobs:
           echo "name=$name" >> $GITHUB_OUTPUT
 
       - name: Create archive (Unix)
-        if: matrix.os != 'windows-latest'
         run: |
           mkdir -p dist
           cp target/${{ matrix.target }}/release/${{ steps.binary.outputs.name }} dist/
           cp README.md LICENSE dist/ 2>/dev/null || true
           cd dist
           tar -czvf ../${{ steps.binary.outputs.name }}-${{ inputs.tag }}-${{ matrix.target }}.tar.gz *
-
-      - name: Create archive (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path dist
-          Copy-Item "target/${{ matrix.target }}/release/${{ steps.binary.outputs.name }}.exe" dist/
-          Copy-Item README.md, LICENSE dist/ -ErrorAction SilentlyContinue
-          Compress-Archive -Path dist/* -DestinationPath "${{ steps.binary.outputs.name }}-${{ inputs.tag }}-${{ matrix.target }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
@@ -120,13 +99,13 @@ jobs:
           path: artifacts
 
       - name: List artifacts
-        run: find artifacts -type f -name "*.tar.gz" -o -name "*.zip"
+        run: find artifacts -type f -name "*.tar.gz"
 
       - name: Generate checksums
         run: |
           cd artifacts
-          find . -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec mv {} . \;
-          sha256sum *.tar.gz *.zip > SHA256SUMS.txt
+          find . -type f -name "*.tar.gz" -exec mv {} . \;
+          sha256sum *.tar.gz > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Create GitHub Release
@@ -134,7 +113,6 @@ jobs:
         with:
           files: |
             artifacts/*.tar.gz
-            artifacts/*.zip
             artifacts/SHA256SUMS.txt
           generate_release_notes: true
           draft: false
