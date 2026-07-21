@@ -26,6 +26,7 @@ use crate::{
     LearningContext, MemoryAdapter, MemoryGateway, Result, SupportedEmbeddingModel,
 };
 use std::collections::HashMap;
+#[cfg(feature = "sqlite-vec")]
 use std::path::Path;
 
 /// Metadata key: provenance source (value [`TERO_SOURCE_VALUE`]).
