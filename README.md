@@ -1,8 +1,10 @@
 # memory-gate-rs
 
 <!-- FLEET-BADGES:BEGIN -->
-[![CI](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-ci.yml/badge.svg?branch=main)](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-ci.yml?query=branch%3Amain)
-[![Security](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-security.yml/badge.svg?branch=main)](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-security.yml?query=branch%3Amain)
+[![fleet-ci](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-ci.yml/badge.svg?branch=main)](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-ci.yml?query=branch%3Amain)
+[![fleet-security](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-security.yml/badge.svg?branch=main)](https://github.com/tzervas/memory-gate-rs/actions/workflows/fleet-security.yml?query=branch%3Amain)
+[![CI](https://github.com/tzervas/memory-gate-rs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tzervas/memory-gate-rs/actions/workflows/ci.yml?query=branch%3Amain)
+[![coverage](https://raw.githubusercontent.com/tzervas/memory-gate-rs/main/.github/badges/coverage.svg)](https://github.com/tzervas/memory-gate-rs/actions/workflows/ci.yml)
 <!-- FLEET-BADGES:END -->
 
 [![Crates.io](https://img.shields.io/crates/v/memory-gate-rs.svg)](https://crates.io/crates/memory-gate-rs)
