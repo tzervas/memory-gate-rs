@@ -31,7 +31,7 @@ Inspired by neuroscience research on brain plasticity, memory-gate implements a 
 
 ```toml
 [dependencies]
-memory-gate-rs = "0.1"
+memory-gate-rs = "0.2"
 ```
 
 ### Feature Flags

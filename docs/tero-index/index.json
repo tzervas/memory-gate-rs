@@ -563,10 +563,10 @@
       "summary": "- Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython."
     },
     {
-      "anchor": "changelog--1.0.0-2026-01-25",
+      "anchor": "changelog--0.2.0-2026-01-25",
       "family": "changelog",
       "kind": "section",
-      "title": "[1.0.0] - 2026-01-25",
+      "title": "[0.2.0] - 2026-01-25",
       "file": "CHANGELOG.md",
       "line": 20,
       "tag": "Empirical/Declared",

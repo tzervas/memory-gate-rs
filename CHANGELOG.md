@@ -39,7 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See mint.md M1, memory-gate-rs README M1 section. Status: M1 complete; M2 pending.
 
-## [1.0.0] - 2026-01-25
+## [0.2.0] - 2026-01-25
+
+> Renumbered from the previously published `1.0.0` / tag `v1.0.0`. Fleet policy keeps
+> every repo at 0.x until a human authorizes a 1.x cut; under `major_version_zero`
+> the MINOR is the breaking position, so the breaking change over `0.1.0` is `0.2.0`.
+> The `v1.0.0` / `v1.0.1` git tags and the `v1.0.1` GitHub Release are left in place
+> for the operator to decide on retagging.
 
 ### Added
 
@@ -98,5 +104,5 @@ See mint.md M1, memory-gate-rs README M1 section. Status: M1 complete; M2 pendin
 - In-memory storage backend
 - Core trait definitions
 
-[1.0.0]: https://github.com/tzervas/memory-gate-rs/compare/v0.1.0...v1.0.0
+[0.2.0]: https://github.com/tzervas/memory-gate-rs/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/tzervas/memory-gate-rs/releases/tag/v0.1.0
