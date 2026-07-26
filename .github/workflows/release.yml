@@ -40,14 +40,30 @@ jobs:
       - name: Install cross-compilation tools
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          set -euo pipefail
+          if command -v aarch64-linux-gnu-gcc >/dev/null 2>&1; then
+            echo "gcc-aarch64-linux-gnu already present — skipping install"
+          elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+          else
+            echo "::error::gcc-aarch64-linux-gnu is required to cross-compile ${{ matrix.target }} but is missing, and passwordless sudo is unavailable (self-hosted runners run with no-new-privileges) — bake gcc-aarch64-linux-gnu into the runner image" >&2
+            exit 1
+          fi
 
       - name: Install musl tools
         if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y musl-tools
+          set -euo pipefail
+          if command -v musl-gcc >/dev/null 2>&1; then
+            echo "musl-tools already present — skipping install"
+          elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y musl-tools
+          else
+            echo "::error::musl-tools is required to cross-compile ${{ matrix.target }} but is missing, and passwordless sudo is unavailable (self-hosted runners run with no-new-privileges) — bake musl-tools into the runner image" >&2
+            exit 1
+          fi
 
       - name: Cache cargo registry
         uses: Swatinem/rust-cache@v2

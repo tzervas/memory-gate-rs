@@ -39,14 +39,25 @@ jobs:
       - name: Ensure gh
         run: |
           set -euo pipefail
-          command -v gh >/dev/null 2>&1 || {
+          if command -v gh >/dev/null 2>&1; then
+            gh --version
+            exit 0
+          fi
+          # Self-hosted podman runners are hardened with no-new-privileges: sudo cannot
+          # escalate, so only attempt the apt install when passwordless sudo genuinely
+          # works. If it doesn't, fail loudly and name the missing dependency instead of
+          # warning and letting a later step fail more obscurely.
+          if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
               | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
               | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
             sudo apt-get update -qq && sudo apt-get install -y -qq gh
-          }
-          gh --version
+            gh --version
+          else
+            echo "::error::gh CLI is required but missing, and passwordless sudo is unavailable (self-hosted runners run with no-new-privileges) — bake gh into the runner image" >&2
+            exit 1
+          fi
       - name: Close linked issues (main only)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
