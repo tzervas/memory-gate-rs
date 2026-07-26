@@ -136,6 +136,7 @@ Examples:
 5. Run clippy: `cargo clippy --all-features`
 6. Run rustfmt: `cargo fmt`
 7. Submit a PR with a clear description of the changes
+8. (Recommended) Run `./scripts/check.sh` (supports `--fix`) to cover fmt/clippy/doc/build/test --all-features.
 
 PR titles should follow the conventional commit format.
 

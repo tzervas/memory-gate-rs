@@ -89,7 +89,10 @@
 //!
 //! ## Modules
 //!
+//! - [`facade`]: Integration surface for tero-rs (`join/mg-facade@STABLE`)
 //! - [`adapters`]: Memory adapters for knowledge transformation pipelines
+//! - [`embedding`]: Shared multi-model embedding catalog (cross-port with Python)
+//! - [`eval`]: Retrieval metric helpers (golden recall@k; harness-oriented)
 //! - [`storage`]: Pluggable storage backends for persistence
 //! - [`agents`]: Base agent implementations with memory integration
 //! - [`metrics`]: Prometheus-compatible observability metrics
@@ -130,11 +133,15 @@ mod types;
 
 pub mod adapters;
 pub mod agents;
+pub mod embedding;
+pub mod eval;
+pub mod facade;
 pub mod metrics;
 pub mod storage;
 pub mod vsa;
 
 // Re-export core types
+pub use embedding::SupportedEmbeddingModel;
 pub use error::{Error, Result, StorageError};
 pub use gateway::MemoryGateway;
 pub use traits::{
@@ -142,6 +149,16 @@ pub use traits::{
     TaskResult, VectorStore,
 };
 pub use types::{AgentDomain, ConsolidationStats, GatewayConfig, LearningContext};
+
+// Integration facade re-exports (`join/mg-facade@STABLE`)
+#[cfg(feature = "sqlite-vec")]
+pub use facade::open_prod_sqlite;
+pub use facade::{
+    build_tero_metadata_map, consolidate_once, for_tero_learn, gateway_with_store,
+    join_tero_anchors, learn, retrieve, IntegrationConfig, ProdMemoryConfig, TeroMemoryMeta,
+    PROD_QDRANT_COLLECTION_HINT, PROD_SQLITE_PATH_HINT, TERO_META_ANCHORS, TERO_META_INDEX,
+    TERO_META_SOURCE, TERO_SOURCE_VALUE,
+};
 
 /// Prelude module for convenient imports.
 ///
@@ -151,6 +168,7 @@ pub use types::{AgentDomain, ConsolidationStats, GatewayConfig, LearningContext}
 pub mod prelude {
     pub use crate::adapters::PassthroughAdapter;
     pub use crate::agents::BaseMemoryAgent;
+    pub use crate::embedding::SupportedEmbeddingModel;
     pub use crate::error::{Error, Result};
     pub use crate::gateway::MemoryGateway;
     pub use crate::storage::InMemoryStore;

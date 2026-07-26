@@ -1,6 +1,6 @@
 //! Basic usage example for memory-gate-rs
 //!
-//! Run with: cargo run --example basic_usage
+//! Run with: cargo run --example `basic_usage`
 
 use memory_gate_rs::{
     adapters::PassthroughAdapter, storage::InMemoryStore, AgentDomain, GatewayConfig,
@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 3. Configure the gateway
     let config = GatewayConfig::default()
         .with_consolidation_enabled(true)
-        .with_consolidation_interval(Duration::from_secs(60))
+        .with_consolidation_interval(Duration::from_mins(1))
         .with_low_importance_threshold(0.3)
         .with_retrieval_limit(100);
 

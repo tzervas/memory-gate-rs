@@ -26,6 +26,7 @@ permissions:
 jobs:
   close-linked:
     name: Close issues for main merge
+    # Meta jobs also use self-hosted; gha-runner-ctl fleet must stay warm.
     runs-on: [self-hosted, linux, x64, podman]
     if: >
       github.event_name == 'workflow_dispatch' ||
