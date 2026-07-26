@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - M1 domain/facade (mint kickoff)
 
+### Added
+- **`join/mg-facade` integration module** (`memory_gate_rs::facade`): `TeroMemoryMeta`, `for_tero_learn`, `ProdMemoryConfig` / `IntegrationConfig`, async `learn` / `retrieve` / `consolidate_once` wrappers, `open_prod_sqlite` (`sqlite-vec`); README section for tero-rs consumers.
+
+### Changed
+- Stop tracking tero-rs correction/integration design docs in this repo (owned by tero-rs itself).
+
+### Added (docs — Wave C)
+- `docs/WAVE_C_ACCEPTANCE.md` — recall@5 ≤2% relative drop vs recorded fixture baseline (`baseline_mean_recall_at_k` / `min_mean_recall_at_k`), `./scripts/check.sh` + optional `--ignored` golden, aspirational perf non-blocking.
+- README links: Accuracy (Wave C) + Integration roadmap.
+
+### Fixed
+- **Store model binding (`mg/store-model-binding`)**: Qdrant and sqlite-vec backends fail closed on embedding dimension mismatch when reopening a collection/DB; sqlite-vec persists `store_meta` (`embedding_model`, `embedding_dim`) and rejects legacy DBs that already contain rows without metadata. Qdrant stamps collection metadata on create and validates vector size (and model metadata when present). SQLite fallback search errors on stored/query vector length mismatch instead of returning zero similarity.
+
+### Added
+- Golden recall harness: `tests/fixtures/golden_corpus.json` (baseline + min floor), `eval::recall_at_k` / `mean_recall`, ignored `golden_recall` integration test for `sqlite-vec` (`mg/golden-recall@STABLE`).
+- Batch embedding (`embed_batch`) and `BatchKnowledgeStore::store_batch` on `QdrantStore` and `SqliteVecStore` (single FastEmbed lock per batch).
+- Bounded LRU query embedding cache (256 entries, keyed by query text + model id) on vector backends for `retrieve_context`.
+- Multi-model embedding catalog (`SupportedEmbeddingModel`) for `qdrant` and `sqlite-vec` backends: `all-minilm-l6-v2`, `bge-small-en-v1.5` (default), `bge-base-en-v1.5`; stable IDs aligned with Python `memory-gate` (`mg/embed-catalog@STABLE`).
+- `QdrantStore::with_model` and `SqliteVecStore::open_with_model` / `open_in_memory_with_model`; `new()` / `open()` remain default BGE-small for backward compatibility.
+- `SupportedEmbeddingModel::parse`, `dimension()`, `sentence_transformers_id()`, and feature-gated `embedding::init_text_embedding`.
+- Criterion baselines for `sqlite-vec` (`vector_storage_benchmarks`); default `storage_benchmarks` unchanged.
+
 ### Added (M1)
 - Extended `AgentDomain` with workspace integration domains: `Workspace`, `Tero`, `Context`, `MemoryGate`, `LangRust`, `LangPython`.
 - Prefix-aware `FromStr` (e.g. "layer:tero", "lang:rust", "repo:foo") for unified scoping/facade.
