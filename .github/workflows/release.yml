@@ -15,7 +15,7 @@ jobs:
   # Multi-OS release deferred to self-hosted capacity.
   build:
     name: Build (${{ matrix.target }})
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     strategy:
       fail-fast: false
       matrix:
@@ -85,7 +85,7 @@ jobs:
   release:
     name: Create GitHub Release
     needs: build
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     permissions:
       contents: write
     steps:
@@ -123,7 +123,7 @@ jobs:
   publish:
     name: Publish to crates.io
     needs: release
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
       - uses: actions/checkout@v6
         with:
