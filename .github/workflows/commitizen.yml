@@ -14,7 +14,7 @@ permissions:
 jobs:
   cz-check:
     name: Conventional Commits Check
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
       - name: Checkout
         uses: actions/checkout@v6

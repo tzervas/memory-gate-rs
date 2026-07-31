@@ -17,7 +17,7 @@ jobs:
   # Always-green gate so skipped evaluations never mark the run red with zero jobs.
   gate:
     name: gate
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
       - name: noop
         run: echo "reopen workflow loaded"
@@ -25,7 +25,7 @@ jobs:
   reopen:
     name: Reopen issues closed off-main
     needs: [gate]
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     if: >
       github.event_name == 'pull_request' &&
       github.event.pull_request.merged == true &&

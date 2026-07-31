@@ -27,7 +27,7 @@ jobs:
   close-linked:
     name: Close issues for main merge
     # Meta jobs also use self-hosted; gha-runner-ctl fleet must stay warm.
-    runs-on: [self-hosted, linux, x64, podman]
+    runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
