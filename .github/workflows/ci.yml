@@ -181,15 +181,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install cargo-audit + cargo-deny
-        run: |
-          set -euo pipefail
-          if ! command -v cargo-audit >/dev/null 2>&1; then
-            cargo install cargo-audit --locked
-          fi
-          if ! command -v cargo-deny >/dev/null 2>&1; then
-            cargo install cargo-deny --locked
-          fi
+      # Binary install — cargo install OOMs on constrained self-hosted runners (SIGKILL).
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
       - name: cargo audit
         run: cargo audit
       - name: cargo deny check advisories

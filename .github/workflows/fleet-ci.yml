@@ -84,22 +84,30 @@ jobs:
   python:
     name: python lint/test
     needs: detect
-    if: needs.detect.outputs.python == 'true'
+    # Always run so the protec-main required check is not left "skipped" on Rust-only repos.
+    if: always() && needs.detect.result == 'success'
     runs-on: [self-hosted, linux, x64, podman]
     steps:
+      - name: No-op when stack is not Python
+        if: needs.detect.outputs.python != 'true'
+        run: echo "no python stack detected — required-check noop success"
       - uses: actions/checkout@v4
+        if: needs.detect.outputs.python == 'true'
       - name: Install uv
+        if: needs.detect.outputs.python == 'true'
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
           enable-cache: true
       - name: Sync (best-effort)
+        if: needs.detect.outputs.python == 'true'
         run: |
           set -euo pipefail
           if [ -f uv.lock ] || [ -f pyproject.toml ]; then
             uv sync --all-groups 2>/dev/null || uv sync 2>/dev/null || true
           fi
       - name: Ruff (if configured)
+        if: needs.detect.outputs.python == 'true'
         run: |
           set -euo pipefail
           if [ -f pyproject.toml ] && grep -q '\[tool.ruff' pyproject.toml 2>/dev/null; then
@@ -108,6 +116,7 @@ jobs:
             echo "ruff not configured — skip"
           fi
       - name: Pytest (if tests exist)
+        if: needs.detect.outputs.python == 'true'
         run: |
           set -euo pipefail
           if [ -d tests ] || [ -d test ]; then
