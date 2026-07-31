@@ -123,6 +123,8 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: [self-hosted, linux, x64, podman]
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -140,12 +142,81 @@ jobs:
             echo "openssl headers missing — coverage with default features"
             cargo llvm-cov --lcov --output-path lcov.info
           fi
-      - name: Upload coverage to Codecov
+      - name: Generate coverage badge (local SVG)
         if: success()
-        continue-on-error: true
-        uses: codecov/codecov-action@v6
+        run: |
+          set -euo pipefail
+          python3 scripts/gen_coverage_badge.py --lcov lcov.info --out .github/badges/coverage.svg
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          files: lcov.info
-          fail_ci_if_error: false
-          # Self-hosted images often lack gpg; skip signature validation.
-          skip_validation: true
+          name: coverage-lcov
+          path: |
+            lcov.info
+            .github/badges/coverage.svg
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Commit coverage badge on main
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [ ! -f .github/badges/coverage.svg ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/badges/coverage.svg
+          if git diff --cached --quiet; then
+            echo "coverage badge unchanged"
+            exit 0
+          fi
+          git commit -m "chore(ci): update coverage badge [skip ci]"
+          git push
+
+  security:
+    name: Security (audit/deny/semgrep)
+    runs-on: [self-hosted, linux, x64, podman]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      # Binary install — cargo install OOMs on constrained self-hosted runners (SIGKILL).
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      - name: cargo audit
+        run: cargo audit
+      - name: cargo deny check advisories
+        run: |
+          set -euo pipefail
+          if [ -f deny.toml ]; then
+            cargo deny check advisories
+          else
+            echo "no deny.toml — cargo audit is the advisory gate"
+          fi
+      - name: Semgrep SAST (OSS, in-container)
+        run: |
+          set -euo pipefail
+          if command -v podman >/dev/null 2>&1; then
+            podman run --rm -v "$PWD:/src" docker.io/semgrep/semgrep:latest \
+              semgrep --config=p/rust --metrics=off --sarif --output=/src/semgrep.sarif /src
+          else
+            python3 -m pip install --user semgrep
+            export PATH="$HOME/.local/bin:$PATH"
+            semgrep --config=p/rust --metrics=off --sarif --output=semgrep.sarif .
+          fi
+      - name: Upload SAST artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-sast
+          path: |
+            semgrep.sarif
+          if-no-files-found: ignore
+          retention-days: 30

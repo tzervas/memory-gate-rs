@@ -74,7 +74,7 @@
 | `changelog` | entry | — | Changelog | `CHANGELOG.md:1` | — | All notable changes to this project will be documented in this file. |
 | `changelog--unreleased-m1-domain-facade-mint-kickoff` | section | — | [Unreleased] - M1 domain/facade (mint kickoff) | `CHANGELOG.md:8` | — | - Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython. |
 | `changelog--added-m1` | section | — | Added (M1) | `CHANGELOG.md:10` | — | - Extended AgentDomain with workspace integration domains: Workspace, Tero, Context, MemoryGate, LangRust, LangPython. |
-| `changelog--1.0.0-2026-01-25` | section | — | [1.0.0] - 2026-01-25 | `CHANGELOG.md:20` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
+| `changelog--0.2.0-2026-01-25` | section | — | [0.2.0] - 2026-01-25 | `CHANGELOG.md:20` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
 | `changelog--added` | section | — | Added | `CHANGELOG.md:22` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
 | `changelog--core-memory-system` | section | — | Core Memory System | `CHANGELOG.md:24` | — | - MemoryGateway - Central orchestrator for learning and retrieval operations |
 | `changelog--storage-backends` | section | — | Storage Backends | `CHANGELOG.md:31` | — | - InMemoryStore - HashMap-based storage for testing and development (default) |

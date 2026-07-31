@@ -98,7 +98,7 @@
 //! - [`metrics`]: Prometheus-compatible observability metrics
 //! - [`vsa`]: Vector Symbolic Architecture for holographic/associative memory
 
-#![doc(html_root_url = "https://docs.rs/memory-gate-rs/1.0.0")]
+#![doc(html_root_url = "https://docs.rs/memory-gate-rs/0.2.0")]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
 #![warn(

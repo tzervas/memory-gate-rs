@@ -1,6 +1,20 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "1.0.0"
+version = "0.2.0"
 tag_format = "v$version"
-version_files = ["Cargo.toml:version"]
+version_scheme = "semver"
+major_version_zero = true
+
+# Keep these files lockstep on every release bump.
+# NOTE: under major_version_zero the MINOR is the breaking position
+# (0.3.0 is breaking relative to 0.2.x); use `cz bump --increment MINOR`
+# for breaking changes, PATCH otherwise. Do not cut 1.x without explicit
+# human authorization (fleet policy).
+version_files = [
+    "Cargo.toml:version",
+    "src/lib.rs:memory-gate-rs/",
+]
+
 update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+changelog_incremental = true
