@@ -28,7 +28,7 @@ jobs:
             archive: tar.gz
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
@@ -89,7 +89,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
@@ -125,7 +125,7 @@ jobs:
     needs: release
     runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
