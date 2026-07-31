@@ -18,7 +18,7 @@ jobs:
     name: Rustfmt
     runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -29,7 +29,7 @@ jobs:
     name: Clippy
     runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -56,7 +56,7 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Rust ${{ matrix.rust }}
         uses: dtolnay/rust-toolchain@master
@@ -87,7 +87,7 @@ jobs:
     name: Documentation Tests
     runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Run doctests
@@ -104,7 +104,7 @@ jobs:
     name: Documentation
     runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build documentation
@@ -124,7 +124,7 @@ jobs:
     name: Code Coverage
     runs-on: [self-hosted, linux, x64, podman, compute-cpu, host-homelab, scribe-cpu-build]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: llvm-tools-preview
